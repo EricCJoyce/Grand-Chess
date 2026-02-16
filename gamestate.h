@@ -118,6 +118,8 @@ unsigned char attackersOfSquare(unsigned char, unsigned char, GameState*, Move*)
 unsigned int getKnightMoves(unsigned char, GameState*, Move*);
 unsigned int getBishopMoves(unsigned char, GameState*, Move*);
 unsigned int getRookMoves(unsigned char, GameState*, Move*);
+unsigned int getCardinalMoves(unsigned char, GameState*, Move*);
+unsigned int getMarshalMoves(unsigned char, GameState*, Move*);
 unsigned int getQueenMoves(unsigned char, GameState*, Move*);
 unsigned int getKingMoves(unsigned char, GameState*, Move*);
 
@@ -134,6 +136,8 @@ bool isPawn(unsigned char, GameState*);
 bool isKnight(unsigned char, GameState*);
 bool isBishop(unsigned char, GameState*);
 bool isRook(unsigned char, GameState*);
+bool isCardinal(unsigned char, GameState*);
+bool isMarshal(unsigned char, GameState*);
 bool isQueen(unsigned char, GameState*);
 bool isKing(unsigned char, GameState*);
 
@@ -142,6 +146,7 @@ unsigned char teamBishopsOnBoard(char, GameState*);
 unsigned char teamRooksOnBoard(char, GameState*);
 unsigned char teamCardinalsOnBoard(char, GameState*);
 unsigned char teamMarshalsOnBoard(char, GameState*);
+unsigned char teamQueensOnBoard(char, GameState*);
 
 unsigned char uSet(unsigned char, char*, GameState*, unsigned char*);
 unsigned char dSet(unsigned char, char*, GameState*, unsigned char*);
@@ -302,7 +307,7 @@ bool inCheckBy(unsigned char index, unsigned char team, GameState* gs)
             else if(isQueen(i, gs))
               len = getQueenMoves(i, gs, tmp);
             else
-              len = getKingNonCastle(i, gs, tmp);
+              len = getKingMoves(i, gs, tmp);
 
             for(j = 0; j < len; j++)
               enemytargets[enemyStrikeCtr + j] = tmp[j].to;

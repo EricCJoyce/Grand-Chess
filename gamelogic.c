@@ -235,17 +235,17 @@ void deserialize(GameState* gs)
         if(currentState[i] < _NONE)
           gs->board[ currentState[i] ] = _WHITE_BISHOP;
       }
-    for(i = ENCODE_OFFSET_BLACK_BISHOPS; i < ENCODE_OFFSET_WHITE_ROOK; i++)
+    for(i = ENCODE_OFFSET_BLACK_BISHOPS; i < ENCODE_OFFSET_WHITE_ROOKS; i++)
       {
         if(currentState[i] < _NONE)
           gs->board[ currentState[i] ] = _BLACK_BISHOP;
       }
-    for(i = ENCODE_OFFSET_WHITE_ROOK; i < ENCODE_OFFSET_BLACK_ROOK; i++)
+    for(i = ENCODE_OFFSET_WHITE_ROOKS; i < ENCODE_OFFSET_BLACK_ROOKS; i++)
       {
         if(currentState[i] < _NONE)
           gs->board[ currentState[i] ] = _WHITE_ROOK;
       }
-    for(i = ENCODE_OFFSET_BLACK_ROOK; i < ENCODE_OFFSET_WHITE_CARDINAL; i++)
+    for(i = ENCODE_OFFSET_BLACK_ROOKS; i < ENCODE_OFFSET_WHITE_CARDINAL; i++)
       {
         if(currentState[i] < _NONE)
           gs->board[ currentState[i] ] = _BLACK_ROOK;
