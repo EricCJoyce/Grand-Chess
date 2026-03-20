@@ -2,7 +2,7 @@
 
 Game logic module for the human player.
 
-sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src emscripten-c emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getCurrentState','_getMovesBuffer','_sideToMove_client','_isWhite_client','_isBlack_client','_isEmpty_client','_isPawn_client','_isKnight_client','_isBishop_client','_isRook_client','_isCardinal_client','_isMarshal_client','_isQueen_client','_isKing_client','_getMovesIndex_client','_makeMove_client','_canPromoteToKnight','_canPromoteToBishop','_canPromoteToRook','_canPromoteToCardinal','_canPromoteToMarshal','_canPromoteToQueen','_isTerminal_client','_isWin_client','_draw']" -Wl,--no-entry "gamelogic.c" -o "gamelogic.wasm"
+sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src emscripten-c emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getCurrentState','_getMovesBuffer','_sideToMove_client','_isWhite_client','_isBlack_client','_isEmpty_client','_isPawn_client','_isKnight_client','_isBishop_client','_isRook_client','_isCardinal_client','_isMarshal_client','_isQueen_client','_isKing_client','_getMovesIndex_client','_makeMove_client','_canRefusePromotion_client','_canPromoteToKnight_client','_canPromoteToBishop_client','_canPromoteToRook_client','_canPromoteToCardinal_client','_canPromoteToMarshal_client','_canPromoteToQueen_client','_isTerminal_client','_isWin_client','_draw']" -Wl,--no-entry "gamelogic.c" -o "gamelogic.wasm"
 
 */
 
@@ -56,12 +56,13 @@ bool isKing_client(unsigned char);
 unsigned int getMovesIndex_client(unsigned char);
 void makeMove_client(unsigned char, unsigned char, unsigned char);
 
-bool canPromoteToKnight(bool, GameState*);
-bool canPromoteToBishop(bool, GameState*);
-bool canPromoteToRook(bool, GameState*);
-bool canPromoteToCardinal(bool, GameState*);
-bool canPromoteToMarshal(bool, GameState*);
-bool canPromoteToQueen(bool, GameState*);
+bool canRefusePromotion_client(unsigned char);
+bool canPromoteToKnight_client(bool);
+bool canPromoteToBishop_client(bool);
+bool canPromoteToRook_client(bool);
+bool canPromoteToCardinal_client(bool);
+bool canPromoteToMarshal_client(bool);
+bool canPromoteToQueen_client(bool);
 
 bool isTerminal_client(void);
 unsigned char isWin_client(void);
@@ -370,45 +371,71 @@ bool isKing_client(unsigned char index)
     return isKing(index, &gs);
   }
 
-/* Can the team indicated promote to a knight? */
-bool canPromoteToKnight(bool white, GameState* gs)
+/* Can the pawn at "index" refuse promotion? */
+bool canRefusePromotion_client(unsigned char index)
   {
-    unsigned char num = white ? teamKnightsOnBoard('w', gs) : teamKnightsOnBoard('b', gs);
+    GameState gs;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    return isPawn(index, &gs) && ((isWhite(index, &gs) && row(index) < 9) || (isBlack(index, &gs) && row(index) > 0));
+  }
+
+/* Can the team indicated promote to a knight? */
+bool canPromoteToKnight_client(bool white)
+  {
+    GameState gs;
+    unsigned char num;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    num = white ? teamKnightsOnBoard('w', &gs) : teamKnightsOnBoard('b', &gs);
     return num < 2;
   }
 
 /* Can the team indicated promote to a bishop? */
-bool canPromoteToBishop(bool white, GameState* gs)
+bool canPromoteToBishop_client(bool white)
   {
-    unsigned char num = white ? teamBishopsOnBoard('w', gs) : teamBishopsOnBoard('b', gs);
+    GameState gs;
+    unsigned char num;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    num = white ? teamBishopsOnBoard('w', &gs) : teamBishopsOnBoard('b', &gs);
     return num < 2;
   }
 
 /* Can the team indicated promote to a rook? */
-bool canPromoteToRook(bool white, GameState* gs)
+bool canPromoteToRook_client(bool white)
   {
-    unsigned char num = white ? teamRooksOnBoard('w', gs) : teamRooksOnBoard('b', gs);
+    GameState gs;
+    unsigned char num;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    num = white ? teamRooksOnBoard('w', &gs) : teamRooksOnBoard('b', &gs);
     return num < 2;
   }
 
 /* Can the team indicated promote to a cardinal? */
-bool canPromoteToCardinal(bool white, GameState* gs)
+bool canPromoteToCardinal_client(bool white)
   {
-    unsigned char num = white ? teamCardinalsOnBoard('w', gs) : teamCardinalsOnBoard('b', gs);
+    GameState gs;
+    unsigned char num;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    num = white ? teamCardinalsOnBoard('w', &gs) : teamCardinalsOnBoard('b', &gs);
     return num < 1;
   }
 
 /* Can the team indicated promote to a marshal? */
-bool canPromoteToMarshal(bool white, GameState* gs)
+bool canPromoteToMarshal_client(bool white)
   {
-    unsigned char num = white ? teamMarshalsOnBoard('w', gs) : teamMarshalsOnBoard('b', gs);
+    GameState gs;
+    unsigned char num;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    num = white ? teamMarshalsOnBoard('w', &gs) : teamMarshalsOnBoard('b', &gs);
     return num < 1;
   }
 
 /* Can the team indicated promote to a queen? */
-bool canPromoteToQueen(bool white, GameState* gs)
+bool canPromoteToQueen_client(bool white)
   {
-    unsigned char num = white ? teamQueensOnBoard('w', gs) : teamQueensOnBoard('b', gs);
+    GameState gs;
+    unsigned char num;
+    deserialize(&gs);                                               //  Recover GameState from buffer.
+    num = white ? teamQueensOnBoard('w', &gs) : teamQueensOnBoard('b', &gs);
     return num < 1;
   }
 

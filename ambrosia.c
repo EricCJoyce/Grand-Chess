@@ -18,6 +18,24 @@ sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,sourc
 #define MOVE_SORTING_PROMO_BONUS    800                             /* Static Exchange Evaluation, rough promotion bonus. */
 #define MOVE_SORTING_CHECK_BONUS     50                             /* Static Exchange Evaluation, rough putting-opponent-in-check bonus. */
 
+#define ENCODE_OFFSET_WHITE_PAWNS     1                             /* Bytes [1..10]. */
+#define ENCODE_OFFSET_BLACK_PAWNS     11                            /* Bytes [11..20]. */
+#define ENCODE_OFFSET_WHITE_KNIGHTS   21                            /* Bytes [21..22]. */
+#define ENCODE_OFFSET_BLACK_KNIGHTS   23                            /* Bytes [23..24]. */
+#define ENCODE_OFFSET_WHITE_BISHOPS   25                            /* Bytes [25..26]. */
+#define ENCODE_OFFSET_BLACK_BISHOPS   27                            /* Bytes [27..28]. */
+#define ENCODE_OFFSET_WHITE_ROOKS     29                            /* Bytes [29..30]. */
+#define ENCODE_OFFSET_BLACK_ROOKS     31                            /* Bytes [31..32]. */
+#define ENCODE_OFFSET_WHITE_CARDINAL  33                            /* Byte [33]. */
+#define ENCODE_OFFSET_BLACK_CARDINAL  34                            /* Byte [34]. */
+#define ENCODE_OFFSET_WHITE_MARSHAL   35                            /* Byte [35]. */
+#define ENCODE_OFFSET_BLACK_MARSHAL   36                            /* Byte [36]. */
+#define ENCODE_OFFSET_WHITE_QUEEN     37                            /* Byte [37]. */
+#define ENCODE_OFFSET_BLACK_QUEEN     38                            /* Byte [38]. */
+#define ENCODE_OFFSET_WHITE_KING      39                            /* Byte [39]. */
+#define ENCODE_OFFSET_BLACK_KING      40                            /* Byte [40]. */
+#define ENCODE_OFFSET_MOVE_CTR        41                            /* Byte [41]. */
+
 /**************************************************************************************************
  Typedefs  */
 

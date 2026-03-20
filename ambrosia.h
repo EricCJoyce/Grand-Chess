@@ -71,7 +71,8 @@
 #define KNIGHT_PAWN_DIMINISH                              -5.0
 #define KNIGHT_OUTPOST_BONUS                               7.0
 #define KNIGHT_TRAPPED_PENALTY                           -15.0
-#define KNIGHT_BLOCKS_C_PAWN_PENALTY                      -4.0
+#define KNIGHT_BLOCKS_PAWN_PENALTY                        -4.0
+#define KNIGHT_UNDEVELOPED_PENALTY                        -4.0
 #define KNIGHT_MOBILITY_PAWN_CONTROL_PENALTY              -2.0
 #define KNIGHT_BISHOP_DEFENSE_BONUS                        4.0
 #define BISHOP_PAIR_BONUS                                 15.0      /* Counted twice, once per bishop */
@@ -183,7 +184,7 @@ bool isConnectedPawn(unsigned char, unsigned char, GameState*);
 bool isPassedPawn(unsigned char, unsigned char, GameState*);
 bool isCandidatePassedPawn(unsigned char, unsigned char, GameState*);
 bool isUnstoppablePawn(unsigned char, unsigned char, Move*, unsigned char, Move*, unsigned char, GameState*);
-bool isSentryPawn(unsigned char, GameState*);
+bool isSentryPawn(unsigned char, unsigned char, GameState*);
 
 float development(bool, GameState* gs);
 
@@ -531,153 +532,153 @@ float score(GameState* gs)
       {
         hPos = material(whiteMaterial, whiteMaterialLength, gs);
         hNeg = material(blackMaterial, blackMaterialLength, gs);
-        h += (hPos - hNeg) * W0_MATERIAL * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_MATERIAL * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_MATERIAL * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_MATERIAL * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_MATERIAL * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_MATERIAL * phaseWeights[END_GAME];
 
         hPos = mobility(whiteMoves, whiteMovesLength, gs);
         hNeg = mobility(blackMoves, blackMovesLength, gs);
-        h += (hPos - hNeg) * W0_MOBILITY * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_MOBILITY * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_MOBILITY * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_MOBILITY * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_MOBILITY * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_MOBILITY * phaseWeights[END_GAME];
 
         hPos = attacks(whiteMoves, whiteMovesLength, blackMoves, blackMovesLength, gs);
         hNeg = attacks(blackMoves, blackMovesLength, whiteMoves, whiteMovesLength, gs);
-        h += (hPos - hNeg) * W0_ATTACKS * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_ATTACKS * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_ATTACKS * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_ATTACKS * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_ATTACKS * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_ATTACKS * phaseWeights[END_GAME];
 
         hPos = coverage(whiteCoverage, whiteCoverageLength, gs);
         hNeg = coverage(blackCoverage, blackCoverageLength, gs);
-        h += (hPos - hNeg) * W0_COVERAGE * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_COVERAGE * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_COVERAGE * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_COVERAGE * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_COVERAGE * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_COVERAGE * phaseWeights[END_GAME];
 
         hPos = pawnstructure(whiteMaterial, whiteMaterialLength, whitePawnCoverage, whitePawnCoverageLength,
                              blackMoves, blackMovesLength, blackPawnTargets, blackPawnTargetsLength, gs);
         hNeg = pawnstructure(blackMaterial, blackMaterialLength, blackPawnCoverage, blackPawnCoverageLength,
                              whiteMoves, whiteMovesLength, whitePawnTargets, whitePawnTargetsLength, gs);
-        h += (hPos - hNeg) * W0_PAWNSTRUCTURE * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_PAWNSTRUCTURE * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_PAWNSTRUCTURE * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_PAWNSTRUCTURE * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_PAWNSTRUCTURE * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_PAWNSTRUCTURE * phaseWeights[END_GAME];
 
         hPos = development(true, gs);
         hNeg = development(false, gs);
-        h += (hPos - hNeg) * W0_DEVELOPMENT * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_DEVELOPMENT * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_DEVELOPMENT * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_DEVELOPMENT * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_DEVELOPMENT * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_DEVELOPMENT * phaseWeights[END_GAME];
 
         hPos = pieceeval(whiteMaterial, whiteMaterialLength, whiteMoves, whiteMovesLength, whiteCoverage, whiteCoverageLength, whitePawnCoverage, whitePawnCoverageLength, whitePawnTargets, whitePawnTargetsLength, whiteScope, whiteScopeLength, whiteXRay, whiteXRayLength,
                          blackMaterial, blackMaterialLength, blackMoves, blackMovesLength, blackPawnTargets, blackPawnTargetsLength, gs);
         hNeg = pieceeval(blackMaterial, blackMaterialLength, blackMoves, blackMovesLength, blackCoverage, blackCoverageLength, blackPawnCoverage, blackPawnCoverageLength, blackPawnTargets, blackPawnTargetsLength, blackScope, blackScopeLength, blackXRay, blackXRayLength,
                          whiteMaterial, whiteMaterialLength, whiteMoves, whiteMovesLength, whitePawnTargets, whitePawnTargetsLength, gs);
-        h += (hPos - hNeg) * W0_PIECEEVAL * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_PIECEEVAL * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_PIECEEVAL * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_PIECEEVAL * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_PIECEEVAL * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_PIECEEVAL * phaseWeights[END_GAME];
 
         hPos = centercontrol(true, whiteMoves, whiteMovesLength, whitePawnAttacks, whitePawnAttacksLength);
         hNeg = centercontrol(false, blackMoves, blackMovesLength, blackPawnAttacks, blackPawnAttacksLength);
-        h += (hPos - hNeg) * W0_CENTERCONTROL * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_CENTERCONTROL * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_CENTERCONTROL * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_CENTERCONTROL * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_CENTERCONTROL * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_CENTERCONTROL * phaseWeights[END_GAME];
 
         hPos = vulnerability(whiteMoves, whiteMovesLength, gs);
         hNeg = vulnerability(blackMoves, blackMovesLength, gs);
-        h += (hPos - hNeg) * W0_VULNERABILITY * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_VULNERABILITY * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_VULNERABILITY * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_VULNERABILITY * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_VULNERABILITY * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_VULNERABILITY * phaseWeights[END_GAME];
 
         hPos = trapped(whiteMoves, whiteMovesLength,
                        blackMoves, blackMovesLength, blackPawnTargets, blackPawnTargetsLength, blackCoverage, blackCoverageLength, gs);
         hNeg = trapped(blackMoves, blackMovesLength,
                        whiteMoves, whiteMovesLength, whitePawnTargets, whitePawnTargetsLength, whiteCoverage, whiteCoverageLength, gs);
-        h += (hPos - hNeg) * W0_TRAPPED * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_TRAPPED * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_TRAPPED * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_TRAPPED * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_TRAPPED * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_TRAPPED * phaseWeights[END_GAME];
 
         hPos = pins(whiteMaterial, whiteMaterialLength, blackMoves, blackMovesLength,
                     whiteCoverage, whiteCoverageLength, blackCoverage, blackCoverageLength, gs);
         hNeg = pins(blackMaterial, blackMaterialLength, whiteMoves, whiteMovesLength,
                     blackCoverage, blackCoverageLength, whiteCoverage, whiteCoverageLength, gs);
-        h += (hPos - hNeg) * W0_PINS * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_PINS * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_PINS * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_PINS * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_PINS * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_PINS * phaseWeights[END_GAME];
       }
     else  ////////////////////////////////////////////////////////////  BLACK
       {
         hPos = material(blackMaterial, blackMaterialLength, gs);
         hNeg = material(whiteMaterial, whiteMaterialLength, gs);
-        h += (hPos - hNeg) * W0_MATERIAL * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_MATERIAL * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_MATERIAL * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_MATERIAL * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_MATERIAL * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_MATERIAL * phaseWeights[END_GAME];
 
         hPos = mobility(blackMoves, blackMovesLength, gs);
         hNeg = mobility(whiteMoves, whiteMovesLength, gs);
-        h += (hPos - hNeg) * W0_MOBILITY * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_MOBILITY * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_MOBILITY * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_MOBILITY * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_MOBILITY * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_MOBILITY * phaseWeights[END_GAME];
 
         hPos = attacks(blackMoves, blackMovesLength, whiteMoves, whiteMovesLength, gs);
         hNeg = attacks(whiteMoves, whiteMovesLength, blackMoves, blackMovesLength, gs);
-        h += (hPos - hNeg) * W0_ATTACKS * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_ATTACKS * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_ATTACKS * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_ATTACKS * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_ATTACKS * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_ATTACKS * phaseWeights[END_GAME];
 
         hPos = coverage(blackCoverage, blackCoverageLength, gs);
         hNeg = coverage(whiteCoverage, whiteCoverageLength, gs);
-        h += (hPos - hNeg) * W0_COVERAGE * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_COVERAGE * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_COVERAGE * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_COVERAGE * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_COVERAGE * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_COVERAGE * phaseWeights[END_GAME];
 
         hPos = pawnstructure(blackMaterial, blackMaterialLength, blackPawnCoverage, blackPawnCoverageLength,
                              whiteMoves, whiteMovesLength, whitePawnTargets, whitePawnTargetsLength, gs);
         hNeg = pawnstructure(whiteMaterial, whiteMaterialLength, whitePawnCoverage, whitePawnCoverageLength,
                              blackMoves, blackMovesLength, blackPawnTargets, blackPawnTargetsLength, gs);
-        h += (hPos - hNeg) * W0_PAWNSTRUCTURE * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_PAWNSTRUCTURE * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_PAWNSTRUCTURE * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_PAWNSTRUCTURE * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_PAWNSTRUCTURE * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_PAWNSTRUCTURE * phaseWeights[END_GAME];
 
         hPos = development(false, gs);
         hNeg = development(true, gs);
-        h += (hPos - hNeg) * W0_DEVELOPMENT * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_DEVELOPMENT * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_DEVELOPMENT * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_DEVELOPMENT * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_DEVELOPMENT * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_DEVELOPMENT * phaseWeights[END_GAME];
 
         hPos = pieceeval(blackMaterial, blackMaterialLength, blackMoves, blackMovesLength, blackCoverage, blackCoverageLength, blackPawnCoverage, blackPawnCoverageLength, blackPawnTargets, blackPawnTargetsLength, blackScope, blackScopeLength, blackXRay, blackXRayLength,
                          whiteMaterial, whiteMaterialLength, whiteMoves, whiteMovesLength, whitePawnTargets, whitePawnTargetsLength, gs);
         hNeg = pieceeval(whiteMaterial, whiteMaterialLength, whiteMoves, whiteMovesLength, whiteCoverage, whiteCoverageLength, whitePawnCoverage, whitePawnCoverageLength, whitePawnTargets, whitePawnTargetsLength, whiteScope, whiteScopeLength, whiteXRay, whiteXRayLength,
                          blackMaterial, blackMaterialLength, blackMoves, blackMovesLength, blackPawnTargets, blackPawnTargetsLength, gs);
-        h += (hPos - hNeg) * W0_PIECEEVAL * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_PIECEEVAL * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_PIECEEVAL * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_PIECEEVAL * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_PIECEEVAL * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_PIECEEVAL * phaseWeights[END_GAME];
 
         hPos = centercontrol(false, blackMoves, blackMovesLength, blackPawnAttacks, blackPawnAttacksLength);
         hNeg = centercontrol(true, whiteMoves, whiteMovesLength, whitePawnAttacks, whitePawnAttacksLength);
-        h += (hPos - hNeg) * W0_CENTERCONTROL * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_CENTERCONTROL * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_CENTERCONTROL * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_CENTERCONTROL * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_CENTERCONTROL * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_CENTERCONTROL * phaseWeights[END_GAME];
 
         hPos = vulnerability(blackMoves, blackMovesLength, gs);
         hNeg = vulnerability(whiteMoves, whiteMovesLength, gs);
-        h += (hPos - hNeg) * W0_VULNERABILITY * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_VULNERABILITY * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_VULNERABILITY * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_VULNERABILITY * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_VULNERABILITY * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_VULNERABILITY * phaseWeights[END_GAME];
 
         hPos = trapped(blackMoves, blackMovesLength,
                        whiteMoves, whiteMovesLength, whitePawnTargets, whitePawnTargetsLength, whiteCoverage, whiteCoverageLength, gs);
         hNeg = trapped(whiteMoves, whiteMovesLength,
                        blackMoves, blackMovesLength, blackPawnTargets, blackPawnTargetsLength, blackCoverage, blackCoverageLength, gs);
-        h += (hPos - hNeg) * W0_TRAPPED * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_TRAPPED * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_TRAPPED * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_TRAPPED * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_TRAPPED * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_TRAPPED * phaseWeights[END_GAME];
 
         hPos = pins(blackMaterial, blackMaterialLength, whiteMoves, whiteMovesLength,
                     blackCoverage, blackCoverageLength, whiteCoverage, whiteCoverageLength, gs);
         hNeg = pins(whiteMaterial, whiteMaterialLength, blackMoves, blackMovesLength,
                     whiteCoverage, whiteCoverageLength, blackCoverage, blackCoverageLength, gs);
-        h += (hPos - hNeg) * W0_PINS * phase_alphas[OPENING_GAME] +
-             (hPos - hNeg) * W1_PINS * phase_alphas[MIDDLE_GAME]  +
-             (hPos - hNeg) * W2_PINS * phase_alphas[END_GAME];
+        h += (hPos - hNeg) * W0_PINS * phaseWeights[OPENING_GAME] +
+             (hPos - hNeg) * W1_PINS * phaseWeights[MIDDLE_GAME]  +
+             (hPos - hNeg) * W2_PINS * phaseWeights[END_GAME];
       }
 
     return h;
@@ -707,9 +708,9 @@ float materialLookup(unsigned char i, GameState* gs)
       return BISHOP;
     if(isRook(i, gs))
       return ROOK;
-    if(isArchbishop(i, gs))
+    if(isCardinal(i, gs))
       return CARDINAL;
-    if(isChancellor(i, gs))
+    if(isMarshal(i, gs))
       return MARSHAL;
     if(isQueen(i, gs))
       return QUEEN;
@@ -3475,8 +3476,7 @@ float development(bool white, GameState* gs)
             i--;
           }
 
-        if( (!gs->blackKingsidePrivilege && !gs->blackQueensidePrivilege && !gs->blackCastled) ||
-            (((float)totalMajorPiecesAdvanced / (float)totalMajorPieces) > 0.5)                 )
+        if(((float)totalMajorPiecesAdvanced / (float)totalMajorPieces) > 0.5)
           {
             if(row(indexKnight) >= 8)
               h += KNIGHT_UNDEVELOPED_PENALTY;
