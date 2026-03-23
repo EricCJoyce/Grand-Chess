@@ -1603,7 +1603,7 @@
 
 /**************************************************************************************************
  Globals  */
-                                                                    //  6,008 bytes.
+                                                                    //  12,408 bytes.
 unsigned char zobristHashBuffer[ZHASH_TABLE_SIZE * 8];              //  Global array containing the serialized Zobrist-hasher values (unsigned long longs).
                                                                     //  "Keys" are simply unisnged int values #defined above.
 
