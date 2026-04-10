@@ -506,7 +506,7 @@ function allPromotablePiecesHUD(team)
     var teamBool = (team == 'white');
 
     if(gameEngine.instance.exports.canRefusePromotion_client(Select_A))
-      str = '<tr><td><a href="javascript:;" onClick="choosePromo(_NO_PROMO);"><img class="gamesettingbutton" src="https://www.ericjoycefilm.com/wastesoftime/boardgames/grandchess/obj/img/hud/refuse.jpg"/></a></td></tr>';
+      str = '<tr><td><a href="javascript:;" onClick="choosePromo(_NO_PROMO);"><img class="gamesettingbutton" src="https://www.ericjoycefilm.com/wastesoftime/boardgames/grandchess/obj/img/hud/refuse.png"/></a></td></tr>';
     else
       str = '';
 
@@ -565,11 +565,20 @@ function allPromotablePiecesDockedHUD(team)
 
 function choosePromo(p)
   {
-    promote_mp3.play();                                             //  Play the sound.
-    PromotionTarget = p;
-    removeHUD();                                                    //  Remove the floating HUD.
-    blankOutDockedHUD();                                            //  Blank out the Docked HUD.
-    promoteHuman(Select_A, Select_B, p);                            //  Perform the promotion animation.
+    if(p != _NO_PROMO)
+      {
+        promote_mp3.play();                                         //  Play the sound.
+        PromotionTarget = p;
+        removeHUD();                                                //  Remove the floating HUD.
+        blankOutDockedHUD();                                        //  Blank out the Docked HUD.
+        promoteHuman(Select_A, Select_B, p);                        //  Perform the promotion animation.
+      }
+    else
+      {
+        removeHUD();                                                //  Remove the floating HUD.
+        blankOutDockedHUD();                                        //  Blank out the Docked HUD.
+        refusePromoteHuman(Select_A, Select_B);
+      }
   }
 
 //////////////////////////////////////////////////////////////////////

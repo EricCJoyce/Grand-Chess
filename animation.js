@@ -239,6 +239,12 @@ function promoteHuman(a, b, p)
       }
   }
 
+function refusePromoteHuman(a, b)
+  {
+    gameEngine.instance.exports.makeMove_client(a, b, _NO_PROMO);   //  HERE UPDATE THE GAME-ENGINE!!!
+    swapTurns();
+  }
+
 function removePromotedPawnHuman(a, b, p)
   {
     var i;
