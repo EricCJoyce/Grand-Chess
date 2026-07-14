@@ -196,6 +196,8 @@ void copyGameState(GameState* src, GameState* dst)
 
 void makeMove(Move* move, GameState* gs)
   {
+    bool whitePromotion, blackPromotion;
+
     if(isEnPassantAttack(move, gs))                                 //  En-passant capture
       {
         gs->board[ enPassantVictim(move, gs) ] = _EMPTY;
@@ -206,8 +208,10 @@ void makeMove(Move* move, GameState* gs)
       }
     else
       {
+        whitePromotion = isWhite(move->from, gs) && row(move->to) >= 7;
+        blackPromotion = isBlack(move->from, gs) && row(move->to) <= 2;
                                                                     //  Pawn promotion.
-        if(isPawn(move->from, gs) && move->promo != _NO_PROMO && (row(move->to) == 7 || row(move->to) == 0))
+        if(isPawn(move->from, gs) && move->promo != _NO_PROMO && (whitePromotion || blackPromotion))
           {
             if(isWhite(move->from, gs))
               {
@@ -2282,7 +2286,7 @@ unsigned int getKingMoves(unsigned char index, GameState* gs, Move* buffer)
      GAME_OVER_STALEMATE  if the state is a stalemate */
 unsigned char isWin(GameState* gs)
   {
-    Move moves[_NONE];                                              //  Generous upper-bound assumption that every square could be reachable.
+    Move moves[_MAX_MOVES];                                         //  Generous upper-bound assumption that every square could be reachable.
     unsigned int len;
     unsigned char i;
     unsigned char kpos = 0;
@@ -2351,42 +2355,55 @@ bool terminal(GameState* gs)
 /*  Is the given index i vacant? */
 bool isEmpty(unsigned char i, GameState* gs)
   {
-    return (gs->board[i] == _EMPTY);
+    if(i < _NONE)
+      return (gs->board[i] == _EMPTY);
+    return false;
   }
 
 /*  Is the given index i occupied by a Black piece? */
 bool isBlack(unsigned char i, GameState* gs)
   {
-    return (gs->board[i] >= _BLACK_PAWN && gs->board[i] <= _BLACK_KING);
+    if(i < _NONE)
+      return (gs->board[i] >= _BLACK_PAWN && gs->board[i] <= _BLACK_KING);
+    return false;
   }
 
 /*  Is the given index i occupied by a White piece? */
 bool isWhite(unsigned char i, GameState* gs)
   {
-    return (gs->board[i] >= _WHITE_PAWN && gs->board[i] <= _WHITE_KING);
+    if(i < _NONE)
+      return (gs->board[i] >= _WHITE_PAWN && gs->board[i] <= _WHITE_KING);
+    return false;
   }
 
 /*  Is index i the same as index j
     in terms of both being White or both being Black or both being Empty? */
 bool sameSide(unsigned char i, unsigned char j, GameState* gs)
   {
-    return ((isWhite(i, gs) && isWhite(j, gs)) || (isBlack(i, gs) && isBlack(j, gs)));
+    if(i < _NONE && j < _NONE)
+      return ((isWhite(i, gs) && isWhite(j, gs)) || (isBlack(i, gs) && isBlack(j, gs)));
+    return false;
   }
 
 /*  More specific than same(), this function asks,
     "Are i and j on opposite teams?" */
 bool opposed(unsigned char i, unsigned char j, GameState* gs)
   {
-    return ((isWhite(i, gs) && isBlack(j, gs)) || (isBlack(i, gs) && isWhite(j, gs)));
+    if(i < _NONE && j < _NONE)
+      return ((isWhite(i, gs) && isBlack(j, gs)) || (isBlack(i, gs) && isWhite(j, gs)));
+    return false;
   }
 
 /* Return a character indicating which team 'index' belongs to. */
 char getTeam(unsigned char index, GameState* gs)
   {
-    if(isWhite(index, gs))
-      return 'w';
-    if(isBlack(index, gs))
-      return 'b';
+    if(index < _NONE)
+      {
+        if(isWhite(index, gs))
+          return 'w';
+        if(isBlack(index, gs))
+          return 'b';
+      }
     return 'e';
   }
 
