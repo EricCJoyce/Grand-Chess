@@ -1,4 +1,4 @@
-# [Grand-Chess](https://www.ericjoycefilm.com/wastesoftime/boardgames/grandchess/index.php?lang=en)
+# [Grand Chess](https://www.ericjoycefilm.com/wastesoftime/boardgames/grandchess/index.php?lang=en)
 Notes on the creation of Grand Chess
 
 ## Docker container to compile C to WebAssembly
@@ -57,7 +57,7 @@ which is the one of four moves on file for this state.
 
 ## Constants for the chess engine
 
-| Name  | Bytes  | Description |
+| Name  | Value  | Description |
 | :---:	| :----: | :---------: |
 | _GAMESTATE_BYTE_SIZE | 42 | Number of bytes needed to encode a game state |
 | _MOVE_BYTE_SIZE | 3 | Number of bytes needed to describe a move in Chess |
