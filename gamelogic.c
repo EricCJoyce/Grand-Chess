@@ -2,7 +2,7 @@
 
 Game logic module for the human player.
 
-sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src emscripten-c emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getCurrentState','_getMovesBuffer','_sideToMove_client','_isWhite_client','_isBlack_client','_isEmpty_client','_isPawn_client','_isKnight_client','_isBishop_client','_isRook_client','_isCardinal_client','_isMarshal_client','_isQueen_client','_isKing_client','_getMovesIndex_client','_makeMove_client','_canRefusePromotion_client','_canPromoteToKnight_client','_canPromoteToBishop_client','_canPromoteToRook_client','_canPromoteToCardinal_client','_canPromoteToMarshal_client','_canPromoteToQueen_client','_isTerminal_client','_isWin_client','_draw']" -Wl,--no-entry "gamelogic.c" -o "gamelogic.wasm"
+sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src c-wasm emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getCurrentState','_getMovesBuffer','_sideToMove_client','_isWhite_client','_isBlack_client','_isEmpty_client','_isPawn_client','_isKnight_client','_isBishop_client','_isRook_client','_isCardinal_client','_isMarshal_client','_isQueen_client','_isKing_client','_getMovesIndex_client','_makeMove_client','_canRefusePromotion_client','_canPromoteToKnight_client','_canPromoteToBishop_client','_canPromoteToRook_client','_canPromoteToCardinal_client','_canPromoteToMarshal_client','_canPromoteToQueen_client','_isTerminal_client','_isWin_client','_draw']" -Wl,--no-entry "gamelogic.c" -o "gamelogic.wasm"
 
 */
 

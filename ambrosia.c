@@ -1,6 +1,6 @@
 /*
 
-sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src emscripten-c emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getInputGameStateBuffer','_getInputMoveBuffer','_getOutputGameStateBuffer','_getOutputMovesBuffer','_sideToMove_eval','_isTerminal_eval','_isSideToMoveInCheck_eval','_nonPawnMaterial_eval','_makeMove_eval','_makeNullMove_eval','_evaluate_eval','_getMoves_eval']" -Wl,--no-entry "ambrosia.c" -o "eval.wasm"
+sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src c-wasm emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getInputGameStateBuffer','_getInputMoveBuffer','_getOutputGameStateBuffer','_getOutputMovesBuffer','_sideToMove_eval','_isTerminal_eval','_isSideToMoveInCheck_eval','_nonPawnMaterial_eval','_makeMove_eval','_makeNullMove_eval','_evaluate_eval','_getMoves_eval']" -Wl,--no-entry "ambrosia.c" -o "eval.wasm"
 
 */
 
@@ -517,7 +517,7 @@ unsigned int getMoves_eval()
         for(k = 0; k < 4; k++)                                      //  Copy local SIGNED score to global output byte array.
           outputMovesBuffer[i++] = buffer4[k];
                                                                     //  0: quiet; 1: capture or promotion.
-        outputMovesBuffer[i++] = (moves[j].promo == _NO_PROMO || !isCapture(moves + j, &gs)) ? 0 : 1;
+        outputMovesBuffer[i++] = (moves[j].promo == _NO_PROMO && !isCapture(moves + j, &gs)) ? 0 : 1;
       }
 
     return movesLen;
