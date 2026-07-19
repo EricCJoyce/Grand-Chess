@@ -531,7 +531,6 @@ signed int SEE(Move* move, GameState* src)
     unsigned char gainsLen = 0;
     unsigned char target;
     signed int capturedPieceVal;
-    char capturingPiece;
     char team;
     Move buffer[_NONE];
     Move chosenMove;
@@ -543,7 +542,6 @@ signed int SEE(Move* move, GameState* src)
     target = move->to;                                              //  Identify the target.
 
     capturedPieceVal = SEE_lookup(gs.board[move->to]);              //  Look up value of the captured piece.
-    capturingPiece = gs.board[move->from];
     gains[0] = capturedPieceVal;
     makeMove(move, &gs);                                            //  Apply the move to be evaluated.
     team = gs.whiteToMove ? 'w' : 'b';
@@ -566,11 +564,10 @@ signed int SEE(Move* move, GameState* src)
                 leastVal = val;
               }
           }
-        victimVal = SEE_lookup(capturingPiece);                     //  Look up value of the victim.
+        victimVal = SEE_lookup(gs.board[target]);                   //  Look up value of the victim.
         gainsLen++;
         gains[gainsLen] = victimVal - gains[gainsLen - 1];
 
-        capturingPiece = gs.board[chosenMove.from];                 //  Identify the capturing piece.
         makeMove(&chosenMove, &gs);                                 //  Make the capture.
         team = gs.whiteToMove ? 'w' : 'b';
       }
@@ -579,7 +576,7 @@ signed int SEE(Move* move, GameState* src)
       {
         for(j = gainsLen - 1; j >= 0; j--)
           {
-            stopHere = gains[j];                                    //  It is in side-to-move's interest to stop here.
+            stopHere = -gains[j];                                   //  It is in side-to-move's interest to stop here.
             continueExchange = gains[j + 1];                        //  It is in side-to-move's interest to continue exchanging.
             gains[j] = (stopHere > continueExchange) ? -stopHere : -continueExchange;
           }
