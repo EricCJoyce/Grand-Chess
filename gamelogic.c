@@ -91,6 +91,36 @@ unsigned char* getMovesBuffer(void)
     return &movesBuffer[0];
   }
 
+/* Game State Encoding & Decoding
+
+   Byte [     0] = Side to move and en-passant data: [7][6][5][4][3][2][1][0]
+                                                      ^  ^  ^  ^  ^  ^  ^  ^
+                                                      |  |  |  |  |  |  |  +--- { Remaining }
+                                                      |  |  |  |  |  |  +------ { bits      }
+                                                      |  |  |  |  |  +--------- { encode    }
+                                                      |  |  |  |  +------------ { values    }
+                                                      |  |  |  +--------------- { in the    }
+                                                      |  |  +------------------ { range of  }
+                                                      |  +--------------------- { [0, 10].  }
+                                                      +------------------------ ON: white to move; OFF: black to move.
+   Bytes[ 1, 10] = Positions of white pawns.
+   Bytes[11, 20] = Positions of black pawns.
+   Bytes[21, 22] = Positions of white knights.
+   Bytes[23, 24] = Positions of black knights.
+   Bytes[25, 26] = Positions of white bishops.
+   Bytes[27, 28] = Positions of black bishops.
+   Bytes[29, 30] = Positions of white rooks.
+   Bytes[31, 32] = Positions of black rooks.
+   Byte [    33] = Position of white cardinal.
+   Byte [    34] = Position of black cardinal.
+   Byte [    35] = Position of white marshal.
+   Byte [    36] = Position of black marshal.
+   Byte [    37] = Position of white queen.
+   Byte [    38] = Position of black queen.
+   Byte [    39] = Position of white king.
+   Byte [    40] = Position of black king.
+   Byte [    41] = Move counter                      */
+
 /* Pack a GameState into the unsigned-char buffer "currentState". */
 void serialize(GameState* gs)
   {

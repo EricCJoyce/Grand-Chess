@@ -1679,6 +1679,36 @@ void saveMove(NegamaxMove* moveData, unsigned int index)
 /**************************************************************************************************
  Zobrist hashing  */
 
+/* Game State Encoding & Decoding
+
+   Byte [     0] = Side to move and en-passant data: [7][6][5][4][3][2][1][0]
+                                                      ^  ^  ^  ^  ^  ^  ^  ^
+                                                      |  |  |  |  |  |  |  +--- { Remaining }
+                                                      |  |  |  |  |  |  +------ { bits      }
+                                                      |  |  |  |  |  +--------- { encode    }
+                                                      |  |  |  |  +------------ { values    }
+                                                      |  |  |  +--------------- { in the    }
+                                                      |  |  +------------------ { range of  }
+                                                      |  +--------------------- { [0, 10].  }
+                                                      +------------------------ ON: white to move; OFF: black to move.
+   Bytes[ 1, 10] = Positions of white pawns.
+   Bytes[11, 20] = Positions of black pawns.
+   Bytes[21, 22] = Positions of white knights.
+   Bytes[23, 24] = Positions of black knights.
+   Bytes[25, 26] = Positions of white bishops.
+   Bytes[27, 28] = Positions of black bishops.
+   Bytes[29, 30] = Positions of white rooks.
+   Bytes[31, 32] = Positions of black rooks.
+   Byte [    33] = Position of white cardinal.
+   Byte [    34] = Position of black cardinal.
+   Byte [    35] = Position of white marshal.
+   Byte [    36] = Position of black marshal.
+   Byte [    37] = Position of white queen.
+   Byte [    38] = Position of black queen.
+   Byte [    39] = Position of white king.
+   Byte [    40] = Position of black king.
+   Byte [    41] = Move counter                      */
+
 /* Hash the given byte array "hashInputBuffer". */
 unsigned long long hash(unsigned char* hashInputBuffer)
   {
@@ -1696,7 +1726,7 @@ unsigned long long hash(unsigned char* hashInputBuffer)
         memcpy(&ull8, buffer8, 8);                                  //  Force the 8-byte buffer into an unsigned long long.
         h ^= ull8;
       }
-
+                                                                    //  Remove side-to-move bit.
     enPassantByte = ((hashInputBuffer[0] & 128) == 128) ? hashInputBuffer[0] - 128 : hashInputBuffer[0];
     if(enPassantByte > 10)
       enPassantByte = 0;                                            //  "There can be only one!"
@@ -1779,7 +1809,7 @@ unsigned long long hash(unsigned char* hashInputBuffer)
         if(hashInputBuffer[i] < _NONE && hashInputBuffer[i] > 19 && hashInputBuffer[i] < 90)
           {
             for(l = 0; l < 8; l++)                                  //  Copy 8 bytes from the serial buffer.
-              buffer8[l] = zobristHashBuffer[(WP_A3 + hashInputBuffer[i] - 19) * 8 + l];
+              buffer8[l] = zobristHashBuffer[(WP_A3 + hashInputBuffer[i] - 20) * 8 + l];
             memcpy(&ull8, buffer8, 8);                              //  Force the 8-byte buffer into an unsigned long long.
             h ^= ull8;
           }
@@ -1791,7 +1821,7 @@ unsigned long long hash(unsigned char* hashInputBuffer)
         if(hashInputBuffer[i] < _NONE && hashInputBuffer[i] > 9 && hashInputBuffer[i] < 80)
           {
             for(l = 0; l < 8; l++)                                  //  Copy 8 bytes from the serial buffer.
-              buffer8[l] = zobristHashBuffer[(BP_A2 + hashInputBuffer[i] - 9) * 8 + l];
+              buffer8[l] = zobristHashBuffer[(BP_A2 + hashInputBuffer[i] - 10) * 8 + l];
             memcpy(&ull8, buffer8, 8);                              //  Force the 8-byte buffer into an unsigned long long.
             h ^= ull8;
           }
@@ -1950,6 +1980,8 @@ unsigned long long hash(unsigned char* hashInputBuffer)
             h ^= ull8;
           }
       }
+
+                                                                    //  We do NOT hash the move counter.
 
     return h;
   }
