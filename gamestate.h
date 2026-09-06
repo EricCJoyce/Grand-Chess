@@ -2,60 +2,66 @@
 #define __GAMESTATE_H
 
 #include <ctype.h>
-#include <math.h>                                                   /* Needed for INFINITY. */
+#include <math.h>                                                   /* Needed for INFINITY and tanh. */
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
 
-#define _NONE                   100
-#define _NO_PROMO                 0
-#define _PROMO_KNIGHT             1
-#define _PROMO_BISHOP             2
-#define _PROMO_ROOK               3
-#define _PROMO_CARDINAL           4
-#define _PROMO_MARSHAL            5
-#define _PROMO_QUEEN              6
+#define _NONE                       100
+#define _NO_PROMO                     0
+#define _PROMO_KNIGHT                 1
+#define _PROMO_BISHOP                 2
+#define _PROMO_ROOK                   3
+#define _PROMO_CARDINAL               4
+#define _PROMO_MARSHAL                5
+#define _PROMO_QUEEN                  6
 
-#define _EMPTY                 0x00
-#define _WHITE_PAWN            0x01
-#define _WHITE_KNIGHT          0x02
-#define _WHITE_BISHOP          0x03
-#define _WHITE_ROOK            0x04
-#define _WHITE_CARDINAL        0x05
-#define _WHITE_MARSHAL         0x06
-#define _WHITE_QUEEN           0x07
-#define _WHITE_KING            0x08
-#define _BLACK_PAWN            0x09
-#define _BLACK_KNIGHT          0x0A
-#define _BLACK_BISHOP          0x0B
-#define _BLACK_ROOK            0x0C
-#define _BLACK_CARDINAL        0x0D
-#define _BLACK_MARSHAL         0x0E
-#define _BLACK_QUEEN           0x0F
-#define _BLACK_KING            0x10
+#define _EMPTY                     0x00
+#define _WHITE_PAWN                0x01
+#define _WHITE_KNIGHT              0x02
+#define _WHITE_BISHOP              0x03
+#define _WHITE_ROOK                0x04
+#define _WHITE_CARDINAL            0x05
+#define _WHITE_MARSHAL             0x06
+#define _WHITE_QUEEN               0x07
+#define _WHITE_KING                0x08
+#define _BLACK_PAWN                0x09
+#define _BLACK_KNIGHT              0x0A
+#define _BLACK_BISHOP              0x0B
+#define _BLACK_ROOK                0x0C
+#define _BLACK_CARDINAL            0x0D
+#define _BLACK_MARSHAL             0x0E
+#define _BLACK_QUEEN               0x0F
+#define _BLACK_KING                0x10
 
-#define _WHITE_TO_MOVE            0
-#define _BLACK_TO_MOVE            1
+#define _WHITE_TO_MOVE                0
+#define _BLACK_TO_MOVE                1
 
-#define _MAX_MATERIAL_KNIGHT      2                                 /* At most, two knights per team. */
-#define _MAX_MATERIAL_BISHOP      2                                 /* At most, two bishops per team. */
-#define _MAX_MATERIAL_ROOK        2                                 /* At most, two rooks per team. */
-#define _MAX_MATERIAL_CARDINAL    1                                 /* At most, one cardinal per team. */
-#define _MAX_MATERIAL_MARSHAL     1                                 /* At most, one marshal per team. */
-#define _MAX_MATERIAL_QUEEN       1                                 /* At most, one queen per team. */
+#define _MAX_MATERIAL_KNIGHT          2                             /* At most, two knights per team. */
+#define _MAX_MATERIAL_BISHOP          2                             /* At most, two bishops per team. */
+#define _MAX_MATERIAL_ROOK            2                             /* At most, two rooks per team. */
+#define _MAX_MATERIAL_CARDINAL        1                             /* At most, one cardinal per team. */
+#define _MAX_MATERIAL_MARSHAL         1                             /* At most, one marshal per team. */
+#define _MAX_MATERIAL_QUEEN           1                             /* At most, one queen per team. */
 
-#define GAME_ONGOING              0
-#define GAME_OVER_WHITE_WINS      1
-#define GAME_OVER_BLACK_WINS      2
-#define GAME_OVER_STALEMATE       3
+#define GAME_ONGOING                  0
+#define GAME_OVER_WHITE_WINS          1
+#define GAME_OVER_BLACK_WINS          2
+#define GAME_OVER_STALEMATE           3
 
-#define _GAMESTATE_BYTE_SIZE     42                                 /* Number of bytes needed to store a GameState structure. */
-#define _MOVE_BYTE_SIZE           3                                 /* Number of bytes needed to store a Move structure. */
-#define _MAX_NUM_TARGETS         64                                 /* A (generous) upper bound on how many distinct destinations (not distinct moves)
+#define _GAMESTATE_BYTE_SIZE         42                             /* Number of bytes needed to store a GameState structure. */
+#define _MOVE_BYTE_SIZE               3                             /* Number of bytes needed to store a Move structure. */
+#define _MAX_NUM_TARGETS             64                             /* A (generous) upper bound on how many distinct destinations (not distinct moves)
                                                                        may be available to a player from a single index. */
-#define _MAX_MOVES              256                                 /* A (generous) upper bound on how many moves are available to a team in a single turn. */
+#define _MAX_MOVES                  512                             /* A (generous) upper bound on how many moves are available to a team in a single turn. */
+
+#define _REPETITION_STATE_BYTE_SIZE  41                             /* Bytes needed for repetition-detection encoding. */
+#define _MAX_STATE_REPETITION         5                             /* According to FIDE rules, the 5th occurrence of a game state forces a draw.
+                                                                       (In fact, three repetitions allows a player to request a draw, but Philadelphia
+                                                                        is a Terminator that does not believe in draws. A human player would also simply
+                                                                        close the browser page.) */
 
 /**************************************************************************************************
  Typedefs  */
@@ -80,8 +86,8 @@ typedef struct GameStateType                                        //  TOTAL: 1
                                                                     //   .   .   .   .   .   .   .   .   .   .
                                                                     //   .   .   .   .   .   .   .   .   .   .
                                                                     //   A   B   C   D   E   F   G   H   I   J
-    unsigned char moveCtr;                                          //  The 50-move rule states that a player can claim a draw if no capture has been made
-                                                                    //  and no pawn has been moved in the last 50 moves (for this purpose a "move" consists
+    unsigned char moveCtr;                                          //  The 75-move rule states that a player can claim a draw if no capture has been made
+                                                                    //  and no pawn has been moved in the last 75 moves (for this purpose a "move" consists
                                                                     //  of a player completing a turn followed by the opponent completing a turn).
                                                                     //  The purpose of this rule is to prevent a player with no chance of winning from
                                                                     //  continuing to play indefinitely or tiring the opponent.
@@ -111,7 +117,6 @@ unsigned int getPawnMoves(unsigned char, GameState*, Move*);
 unsigned int getPawnAttackable(unsigned char, GameState*, Move*);
 unsigned int getPawnEnPassantAttacks(unsigned char, GameState*, Move*);
 bool isEnPassantAttack(Move*, GameState*);
-bool isCapture(Move*, GameState*);
 unsigned char enPassantVictim(Move*, GameState*);
 bool isPawnDoubleMove(unsigned char, unsigned char, GameState*);
 unsigned char attackersOfSquare(unsigned char, unsigned char, GameState*, Move*);
@@ -125,6 +130,7 @@ unsigned int getQueenMoves(unsigned char, GameState*, Move*);
 unsigned int getKingMoves(unsigned char, GameState*, Move*);
 
 unsigned char isWin(GameState*);
+bool insufficientMaterial(GameState*);
 bool terminal(GameState*);
 
 bool isEmpty(unsigned char, GameState*);
@@ -141,6 +147,7 @@ bool isCardinal(unsigned char, GameState*);
 bool isMarshal(unsigned char, GameState*);
 bool isQueen(unsigned char, GameState*);
 bool isKing(unsigned char, GameState*);
+bool isCapture(Move*, GameState*);
 
 unsigned char teamKnightsOnBoard(char, GameState*);
 unsigned char teamBishopsOnBoard(char, GameState*);
@@ -204,7 +211,7 @@ void makeMove(Move* move, GameState* gs)
         gs->board[move->to] = gs->board[move->from];
         gs->board[move->from] = _EMPTY;
         gs->previousDoublePawnMove = 0;                             //  Zero this out.
-        gs->moveCtr = 0;                                            //  Capture resets the 50-move counter.
+        gs->moveCtr = 0;                                            //  Capture resets the 75-move counter.
       }
     else
       {
@@ -239,7 +246,7 @@ void makeMove(Move* move, GameState* gs)
               }
             gs->board[move->from] = _EMPTY;
             gs->previousDoublePawnMove = 0;                         //  Zero this out.
-            gs->moveCtr = 0;                                        //  Pawn move resets the 50-move counter.
+            gs->moveCtr = 0;                                        //  Pawn move resets the 75-move counter.
           }
         else                                                        //  Any other case.
           {
@@ -248,7 +255,7 @@ void makeMove(Move* move, GameState* gs)
             if(isPawnDoubleMove(move->from, move->to, gs))          //  Save last move IFF last move was a pawn double-move!
               gs->previousDoublePawnMove = col(move->from) + 1;
 
-            if(isPawn(move->from, gs) || !isEmpty(move->to, gs))    //  Pawn move or capture reset the 50-move counter.
+            if(isPawn(move->from, gs) || !isEmpty(move->to, gs))    //  Pawn move or capture reset the 75-move counter.
               gs->moveCtr = 0;
             else                                                    //  Otherwise, increase the counter.
               gs->moveCtr++;
@@ -336,7 +343,7 @@ bool inCheckBy(unsigned char index, unsigned char team, GameState* gs)
 unsigned int getMoves(GameState* gs, Move* buffer)
   {
     unsigned int movesCtr = 0;
-    Move potentialmoves[_NONE];                                     //  Assumes generous upper bound of moves per piece.
+    Move potentialmoves[_MAX_MOVES];                                //  Assumes generous upper bound of moves per piece.
     unsigned int potentialmovesCtr = 0;
     unsigned int i;
     unsigned char index;
@@ -366,7 +373,7 @@ unsigned int getMoves(GameState* gs, Move* buffer)
    Return number of moves. Actual Move objects stored in given buffer. */
 unsigned int getMovesIndex(unsigned char index, GameState* gs, Move* buffer)
   {
-    Move potentialmoves[_NONE];                                     //  Assumes a generous upper bound of all squares being reachable from a single index.
+    Move potentialmoves[_MAX_MOVES];                                //  Assumes a generous upper bound of all squares being reachable from a single index.
     unsigned int potentialmovesCtr = 0;
     unsigned int movesCtr = 0;
     unsigned int i;
@@ -462,7 +469,7 @@ unsigned int getMovesIndex(unsigned char index, GameState* gs, Move* buffer)
 unsigned int getPawnMoves(unsigned char index, GameState* gs, Move* buffer)
   {
     unsigned int movesCtr = 0;
-    unsigned char i, len = 0;
+    unsigned int i, len = 0;
     unsigned char knightCtr, bishopCtr, rookCtr, cardinalCtr, marshalCtr, queenCtr;
     Move tmp[1];                                                    //  There may only be one en-passant attack available per pawn at a time.
 
@@ -1534,10 +1541,10 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 0)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && isBlack(l(move->from), gs) && move->to == ul(move->from))
+                  if(isWhite(move->from, gs) && isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && isWhite(l(move->from), gs) && move->to == dl(move->from))
+                  if(isBlack(move->from, gs) && isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from))
                     return true;
                 }
               break;
@@ -1546,12 +1553,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 1)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1560,12 +1567,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 2)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1574,12 +1581,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 3)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1588,12 +1595,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 4)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1602,12 +1609,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 5)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1616,12 +1623,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 6)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1630,12 +1637,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 7)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1644,12 +1651,12 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 8)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && move->to == ul(move->from)) ||
-                                                  (isBlack(r(move->from), gs) && move->to == ur(move->from)) ))
+                  if(isWhite(move->from, gs) && ( (isBlack(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == ul(move->from)) ||
+                                                  (isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from)) ))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && move->to == dl(move->from)) ||
-                                                  (isWhite(r(move->from), gs) && move->to == dr(move->from)) ))
+                  if(isBlack(move->from, gs) && ( (isWhite(l(move->from), gs) && isPawn(l(move->from), gs) && move->to == dl(move->from)) ||
+                                                  (isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from)) ))
                     return true;
                 }
               break;
@@ -1658,10 +1665,10 @@ bool isEnPassantAttack(Move* move, GameState* gs)
               if(isPawn(move->from, gs) && isEmpty(move->to, gs) && col(move->to) != col(move->from) && col(move->to) == 9)
                 {
                                                                     //  White captures black en passant.
-                  if(isWhite(move->from, gs) && isBlack(r(move->from), gs) && move->to == ur(move->from))
+                  if(isWhite(move->from, gs) && isBlack(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == ur(move->from))
                     return true;
                                                                     //  Black captures white en passant.
-                  if(isBlack(move->from, gs) && isWhite(r(move->from), gs) && move->to == dr(move->from))
+                  if(isBlack(move->from, gs) && isWhite(r(move->from), gs) && isPawn(r(move->from), gs) && move->to == dr(move->from))
                     return true;
                 }
               break;
@@ -1669,12 +1676,6 @@ bool isEnPassantAttack(Move* move, GameState* gs)
       }
 
     return false;
-  }
-
-/* Is the given move a capture on the given GameState? */
-bool isCapture(Move* move, GameState* gs)
-  {
-    return !isEmpty(move->to, gs) || isEnPassantAttack(move, gs);
   }
 
 /* If white has captured en passant, then the captured black pawn is below it.
@@ -1696,7 +1697,7 @@ unsigned char attackersOfSquare(unsigned char index, unsigned char team, GameSta
     unsigned char len = 0;
     unsigned char i;
     unsigned int lenMoves, j;
-    Move moves[_NONE];                                              //  Assumes generous upper bound of moves per piece.
+    Move moves[_MAX_MOVES];                                         //  Assumes generous upper bound of moves per piece.
 
     for(i = 0; i < _NONE; i++)                                      //  Scan every square.
       {
@@ -2286,27 +2287,11 @@ unsigned int getKingMoves(unsigned char index, GameState* gs, Move* buffer)
      GAME_OVER_STALEMATE  if the state is a stalemate */
 unsigned char isWin(GameState* gs)
   {
-    Move moves[_MAX_MOVES];                                         //  Generous upper-bound assumption that every square could be reachable.
+    Move moves[_MAX_MOVES];                                         //  Generous upper-bound assumption.
     unsigned int len;
-    unsigned char i;
     unsigned char kpos = 0;
-    unsigned char wMatNonK = 0, bMatNonK = 0;                       //  Counts of pieces other than Kings
-
-    if(gs->moveCtr == 100)                                          //  Twice 50.
-      return GAME_OVER_STALEMATE;
 
     len = getMoves(gs, moves);                                      //  Get moves for side to move
-
-    for(i = 0; i < _NONE; i++)                                      //  Count up all pieces that are not a King
-      {
-        if(!isEmpty(i, gs) && !isKing(i, gs))
-          {
-            if(isWhite(i, gs))
-              wMatNonK++;
-            else
-              bMatNonK++;
-          }
-      }
 
     if(len == 0)                                                    //  Game is over if side to move cannot move
       {
@@ -2334,10 +2319,61 @@ unsigned char isWin(GameState* gs)
             return GAME_OVER_STALEMATE;
           }
       }
-    else if(wMatNonK == 0 && bMatNonK == 0)                         //  Game is over if only Kings remain
+    else if(insufficientMaterial(gs))                               //  Game is over if there is insufficient material to mate.
+      return GAME_OVER_STALEMATE;
+
+    if(gs->moveCtr >= 150)                                          //  Twice 75.
       return GAME_OVER_STALEMATE;
 
     return GAME_ONGOING;
+  }
+
+/* Cases in which mate is known to be impossible, according to FIDE.
+   K   vs. K
+   K+B vs. K
+   K+N vs. K
+   K+B vs. K+B, with both bishops confined to black-square complex
+   K+B vs. K+B, with both bishops confined to white-square complex
+
+   Note that K+NN vs. K cannot *force* mate, but mate is possible if the defending king cooperates.
+   Therefore, K+NN vs. K cannot technically be considered a dead condition. */
+bool insufficientMaterial(GameState* gs)
+  {
+    unsigned char i;
+    unsigned char bishopCtr = 0;
+    unsigned char knightCtr = 0;
+    bool bishopsOnBlack = false;
+    bool bishopsOnWhite = false;
+
+    for(i = 0; i < _NONE; i++)
+      {
+        if(isPawn(i, gs) || isRook(i, gs) || isMarshal(i, gs) || isCardinal(i, gs) || isQueen(i, gs))
+          return false;                                             //  Any of these pieces means mate remains possible.
+
+        if(isKnight(i, gs))
+          knightCtr++;
+        else if(isBishop(i, gs))
+          {
+            bishopCtr++;
+                                                                    //  We only care that the bishops occupy one color complex
+                                                                    //  or both; which parity is called "black" is immaterial.
+            if((row(i) + col(i)) & 1)
+              bishopsOnBlack = true;
+            else
+              bishopsOnWhite = true;
+          }
+      }
+
+    if(bishopCtr == 0 && knightCtr == 0)                            //  K vs. K.
+      return true;
+
+    if(bishopCtr + knightCtr == 1)                                  //  K+B vs. K or K+N vs. K.
+      return true;
+                                                                    //  Bishops are the only non-King pieces, and every bishop lives
+    if(knightCtr == 0 && !(bishopsOnBlack && bishopsOnWhite))       //  on the same square-color complex.
+      return true;
+
+    return false;
   }
 
 bool terminal(GameState* gs)
@@ -2469,6 +2505,11 @@ bool isKing(unsigned char i, GameState* gs)
     if(i < _NONE)
       return (gs->board[i] == _WHITE_KING || gs->board[i] == _BLACK_KING);
     return false;
+  }
+
+bool isCapture(Move* move, GameState* gs)
+  {
+    return !isEmpty(move->to, gs) || isEnPassantAttack(move, gs);
   }
 
 /* How many knights for the given team are still alive? */

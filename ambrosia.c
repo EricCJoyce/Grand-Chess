@@ -1,6 +1,6 @@
 /*
 
-sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src c-wasm emcc -Os -s STANDALONE_WASM -s EXPORTED_FUNCTIONS="['_getInputGameStateBuffer','_getInputMoveBuffer','_getOutputGameStateBuffer','_getOutputMovesBuffer','_sideToMove_eval','_isTerminal_eval','_isSideToMoveInCheck_eval','_nonPawnMaterial_eval','_makeMove_eval','_makeNullMove_eval','_evaluate_eval','_getMoves_eval']" -Wl,--no-entry "ambrosia.c" -o "eval.wasm"
+sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,source=$(pwd),target=/home/src c-wasm emcc -Os -s STANDALONE_WASM -s INITIAL_HEAP=1048576 -s EXPORTED_FUNCTIONS="['_getInputGameStateBuffer','_getInputMoveBuffer','_getOutputGameStateBuffer','_getOutputMovesBuffer','_getOutputRepetitionStateBuffer','_sideToMove_eval','_isTerminal_eval','_isSideToMoveInCheck_eval','_nonPawnMaterial_eval','_makeMove_eval','_makeNullMove_eval','_evaluate_eval','_getMoves_eval','_repetitionState_eval','_historyVerdict_eval']" -Wl,--no-entry "ambrosia.c" -o "eval.wasm"
 
 */
 
@@ -17,6 +17,9 @@ sudo docker run --rm -v $(pwd):/src -u $(id -u):$(id -g) --mount type=bind,sourc
 #define SEE_SCORE_KING             1000                             /* Static Exchange Evaluation, rough king score. */
 #define MOVE_SORTING_PROMO_BONUS    800                             /* Static Exchange Evaluation, rough promotion bonus. */
 #define MOVE_SORTING_CHECK_BONUS     50                             /* Static Exchange Evaluation, rough putting-opponent-in-check bonus. */
+
+#define HISTORY_OK                    0                             /* The number of occurrences of the given game state do NOT cause draw by repetition. */
+#define HISTORY_DRAW                  1                             /* The number of occurrences of the given game state DOES CAUSE draw by repetition. */
 
 #define ENCODE_OFFSET_WHITE_PAWNS     1                             /* Bytes [1..10]. */
 #define ENCODE_OFFSET_BLACK_PAWNS     11                            /* Bytes [11..20]. */
@@ -47,6 +50,7 @@ unsigned char* getInputGameStateBuffer(void);
 unsigned char* getInputMoveBuffer(void);
 unsigned char* getOutputGameStateBuffer(void);
 unsigned char* getOutputMovesBuffer(void);
+unsigned char* getOutputRepetitionStateBuffer(void);
 
 void serializeGameStateToBuffer(GameState*, unsigned char*);
 void serializeMoveToBuffer(Move*, unsigned char*);
@@ -61,8 +65,12 @@ void makeMove_eval(void);
 void makeNullMove_eval(void);
 float evaluate_eval(void);
 unsigned int getMoves_eval(void);
+void repetitionState_eval(void);
+unsigned char historyVerdict_eval(unsigned int);
+
 signed int SEE(Move*, GameState*);
 signed int SEE_lookup(char);
+unsigned char repetitionEnPassant(GameState*);
 
 /**************************************************************************************************
  Globals  */
@@ -79,6 +87,10 @@ unsigned char outputGameStateBuffer[_GAMESTATE_BYTE_SIZE];          //  Global a
                                                                     //    _MOVE_BYTE_SIZE  :  bytes encoding a single move,
                                                                     //    4                :  bytes for signed integer, which is rough score.
 unsigned char outputMovesBuffer[_MAX_MOVES * (_MOVE_BYTE_SIZE + 5)];//    1                :  byte (should be Boolean) indicating whether move is "quiet".
+
+                                                                    //  Global array containing a specially-encoded game state for repetition testing.
+                                                                    //  (See FIDE rules regarding repeated states.)
+unsigned char outputRepetitionStateBuffer[_REPETITION_STATE_BYTE_SIZE];
 
 /**************************************************************************************************
  Functions  */
@@ -105,6 +117,12 @@ unsigned char* getOutputGameStateBuffer(void)
 unsigned char* getOutputMovesBuffer(void)
   {
     return &outputMovesBuffer[0];
+  }
+
+/* Expose the global array declared here to JavaScript.  */
+unsigned char* getOutputRepetitionStateBuffer(void)
+  {
+    return &outputRepetitionStateBuffer[0];
   }
 
 /* Write the given game state to the given buffer. */
@@ -459,7 +477,9 @@ void makeNullMove_eval(void)
 float evaluate_eval(void)
   {
     GameState gs;
+
     deserializeGameState(&gs);                                      //  Recover GameState from buffer.
+
     //return (float)tanh(score(&gs));                                 //  tanh() helps to saturate extreme evaluations and produce alpha-beta cutoffs.
     return score(&gs);                                              //  Negamax rule: always evaluate for the side that is now to move.
   }
@@ -522,6 +542,42 @@ unsigned int getMoves_eval()
       }
 
     return movesLen;
+  }
+
+/* Write the canonical FIDE repetition identity of the GameState currently encoded in inputGameStateBuffer to outputRepetitionStateBuffer.
+   Layout:
+     byte 0      side to move + legally relevant en-passant state
+     bytes 1-40  piece locations
+
+   Deliberately omitted:
+     moveCtr                 */
+void repetitionState_eval(void)
+  {
+    GameState gs;
+    unsigned char ch;
+    unsigned char i;
+
+    deserializeGameState(&gs);
+
+    ch = 0;                                                         //  Side to move and CURRENT castling privileges.
+    if(gs.whiteToMove)
+      ch |= 128;
+
+    outputRepetitionStateBuffer[0] = ch + repetitionEnPassant(&gs); //  En-passant state only matters if a LEGAL en-passant capture is presently possible.
+
+    for(i = 1; i < _REPETITION_STATE_BYTE_SIZE; i++)
+      outputRepetitionStateBuffer[i] = inputGameStateBuffer[i];
+
+    return;
+  }
+
+/* Allow a game-agnostic negamax engine to decide whether the given occurrence count is enough to force a draw. */
+unsigned char historyVerdict_eval(unsigned int occurrences)
+  {
+    if(occurrences >= _MAX_STATE_REPETITION)
+      return HISTORY_DRAW;
+
+    return HISTORY_OK;
   }
 
 /* Static Exchange Evaluation */
@@ -605,5 +661,51 @@ signed int SEE_lookup(char piece)
       return SEE_SCORE_QUEEN;
     if(piece == _WHITE_KING || piece == _BLACK_KING)
       return SEE_SCORE_KING;
+    return 0;
+  }
+
+/* Return the en-passant byte relevant to FIDE position identity.
+   A previous pawn double-move matters only if the side to move can actually make a legal en-passant capture. */
+unsigned char repetitionEnPassant(GameState* gs)
+  {
+    unsigned char i, kingIndex;
+    unsigned int len;
+    Move epMove[1];
+    GameState tmp;
+
+    if(gs->previousDoublePawnMove == 0)
+      return 0;
+
+    for(i = 0; i < _NONE; i++)
+      {
+        if(isPawn(i, gs) && ((gs->whiteToMove && isWhite(i, gs)) || (!gs->whiteToMove && isBlack(i, gs))))
+          {
+            len = getPawnEnPassantAttacks(i, gs, epMove);
+            if(len > 0)
+              {
+                copyGameState(gs, &tmp);
+                makeMove(epMove, &tmp);
+                kingIndex = 0;                                      //  Check that the en-passant capture does not leave the moving side's King in check.
+
+                if(gs->whiteToMove)
+                  {
+                    while(kingIndex < _NONE && tmp.board[kingIndex] != _WHITE_KING)
+                      kingIndex++;
+
+                    if(kingIndex < _NONE && !inCheckBy(kingIndex, 'b', &tmp))
+                      return gs->previousDoublePawnMove;
+                  }
+                else
+                  {
+                    while(kingIndex < _NONE && tmp.board[kingIndex] != _BLACK_KING)
+                      kingIndex++;
+
+                    if(kingIndex < _NONE && !inCheckBy(kingIndex, 'w', &tmp))
+                      return gs->previousDoublePawnMove;
+                  }
+              }
+          }
+      }
+
     return 0;
   }

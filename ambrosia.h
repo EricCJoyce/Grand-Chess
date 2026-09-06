@@ -3,135 +3,136 @@
 
 #include "gamestate.h"
                                                                     //  Opening game:
-                                                                    //  Weights determined by hand.
-#define W0_MATERIAL                                        5.0
-#define W0_MOBILITY                                        3.0
-#define W0_ATTACKS                                         1.0
-#define W0_COVERAGE                                        1.0
-#define W0_PAWNSTRUCTURE                                   2.0
-#define W0_DEVELOPMENT                                     1.0
-#define W0_PIECEEVAL                                       1.0
-#define W0_CENTERCONTROL                                   2.0
-#define W0_VULNERABILITY                                   1.0
-#define W0_TRAPPED                                         1.0
-#define W0_PINS                                            1.0
+                                                                    //  Weights determined by TDLeaf(lambda).
+#define W0_MATERIAL                                        5.027462005615234f
+#define W0_MOBILITY                                        2.9945411682128906f
+#define W0_ATTACKS                                         0.9985732436180115f
+#define W0_COVERAGE                                        0.9952904582023621f
+#define W0_PAWNSTRUCTURE                                   1.9982895851135254f
+#define W0_DEVELOPMENT                                     1.0001070499420166f
+#define W0_PIECEEVAL                                       0.994127631187439f
+#define W0_CENTERCONTROL                                   1.9721288681030273f
+#define W0_VULNERABILITY                                   0.9592787027359009f
+#define W0_TRAPPED                                         0.9991371631622314f
+#define W0_PINS                                            1.0005770921707153f
                                                                     //  Middle game:
-                                                                    //  Weights determined by hand.
-#define W1_MATERIAL                                        5.0
-#define W1_MOBILITY                                        3.0
-#define W1_ATTACKS                                         1.0
-#define W1_COVERAGE                                        1.0
-#define W1_PAWNSTRUCTURE                                   2.0
-#define W1_DEVELOPMENT                                     0.0
-#define W1_PIECEEVAL                                       2.0
-#define W1_CENTERCONTROL                                   2.0
-#define W1_VULNERABILITY                                   2.0
-#define W1_TRAPPED                                         2.0
-#define W1_PINS                                            2.0
+                                                                    //  Weights determined by TDLeaf(lambda).
+#define W1_MATERIAL                                        5.013429164886475f
+#define W1_MOBILITY                                        2.995124101638794f
+#define W1_ATTACKS                                         1.0011494159698486f
+#define W1_COVERAGE                                        0.9987274408340454f
+#define W1_PAWNSTRUCTURE                                   1.9980015754699707f
+#define W1_DEVELOPMENT                                     0.0002553908561822027f
+#define W1_PIECEEVAL                                       1.9845856428146362f
+#define W1_CENTERCONTROL                                   1.993685007095337f
+#define W1_VULNERABILITY                                   1.9874485731124878f
+#define W1_TRAPPED                                         1.9991310834884644f
+#define W1_PINS                                            2.000345468521118f
                                                                     //  Endgame:
-                                                                    //  Weights determined by hand.
-#define W2_MATERIAL                                        5.0
-#define W2_MOBILITY                                        3.0
-#define W2_ATTACKS                                         1.0
-#define W2_COVERAGE                                        1.0
-#define W2_PAWNSTRUCTURE                                   2.0
-#define W2_DEVELOPMENT                                     0.0
-#define W2_PIECEEVAL                                       1.0
-#define W2_CENTERCONTROL                                   2.0
-#define W2_VULNERABILITY                                   2.0
-#define W2_TRAPPED                                         2.0
-#define W2_PINS                                            2.0
+                                                                    //  Weights determined by TDLeaf(lambda).
+#define W2_MATERIAL                                        5.002573013305664f
+#define W2_MOBILITY                                        2.9997851848602295f
+#define W2_ATTACKS                                         1.0002150535583496f
+#define W2_COVERAGE                                        1.0001648664474487f
+#define W2_PAWNSTRUCTURE                                   1.9993696212768555f
+#define W2_DEVELOPMENT                                     0.00007469231059076265f
+#define W2_PIECEEVAL                                       0.996621310710907f
+#define W2_CENTERCONTROL                                   2.001577138900757f
+#define W2_VULNERABILITY                                   2.000166654586792f
+#define W2_TRAPPED                                         1.9997907876968384f
+#define W2_PINS                                            2.0000369548797607f
 
-#define PAWN                                              85.0
-#define KNIGHT                                           275.0
-#define BISHOP                                           325.0
-#define ROOK                                             500.0
-#define CARDINAL                                         850.0
-#define MARSHAL                                          900.0
-#define QUEEN                                            950.0
+#define PAWN                                              85.0f
+#define KNIGHT                                           275.0f
+#define BISHOP                                           325.0f
+#define ROOK                                             500.0f
+#define CARDINAL                                         850.0f
+#define MARSHAL                                          900.0f
+#define QUEEN                                            950.0f
 
 #define OPENING_GAME                                       0
 #define MIDDLE_GAME                                        1
 #define END_GAME                                           2
 
-#define ISOLATED_PAWN_PENALTY                             -4.0
-#define DOUBLED_PAWN_PENALTY                              -1.0      /* Will be counted twice per occurrence, so effectively = -2 */
-#define BACKWARD_PAWN_PENALTY                             -2.0
-#define CONNECTED_PAWN_BONUS                               1.0
-#define PASSED_PAWN_BONUS                                  3.0
-#define CANDIDATE_PAWN_BONUS                               2.0
-#define UNSTOPPABLE_PAWN_BONUS                             6.0
-#define SENTRY_PAWN_BONUS                                  1.0
+#define ISOLATED_PAWN_PENALTY                             -4.0f
+#define DOUBLED_PAWN_PENALTY                              -1.0f     /* Will be counted twice per occurrence, so effectively = -2 */
+#define BACKWARD_PAWN_PENALTY                             -2.0f
+#define CONNECTED_PAWN_BONUS                               1.0f
+#define PASSED_PAWN_BONUS                                  3.0f
+#define CANDIDATE_PAWN_BONUS                               2.0f
+#define UNSTOPPABLE_PAWN_BONUS                             6.0f
+#define SENTRY_PAWN_BONUS                                  1.0f
 
-#define PAWN_OCCUPY_CENTER_BONUS                           1.0
-#define PAWN_ATTACK_CENTER_BONUS                           2.0
-#define PAWN_BLOCKADE_BONUS                                1.0
-#define PAWN_STUCK_ON_INITIAL_PENALTY                     -4.0
+#define PAWN_OCCUPY_CENTER_BONUS                           1.0f
+#define PAWN_ATTACK_CENTER_BONUS                           2.0f
+#define PAWN_BLOCKADE_BONUS                                1.0f
+#define PAWN_STUCK_ON_INITIAL_PENALTY                     -4.0f
 
-#define KNIGHT_PAWN_DIMINISH                              -5.0
-#define KNIGHT_OUTPOST_BONUS                               7.0
-#define KNIGHT_TRAPPED_PENALTY                           -15.0
-#define KNIGHT_BLOCKS_PAWN_PENALTY                        -4.0
-#define KNIGHT_UNDEVELOPED_PENALTY                        -4.0
-#define KNIGHT_MOBILITY_PAWN_CONTROL_PENALTY              -2.0
-#define KNIGHT_BISHOP_DEFENSE_BONUS                        4.0
-#define BISHOP_PAIR_BONUS                                 15.0      /* Counted twice, once per bishop */
-#define BISHOP_BAD_PENALTY                                -9.0
-#define BISHOP_COLOR_WEAK_PENALTY                         -2.0      /* Multiplied by severity of color weakness */
-#define BISHOP_FIANCHETTO_BONUS                           10.0
-#define BISHOP_FIANCHETTO_AGAINST_SAME_COLOR_BISHOP_BONUS  3.0
-#define BISHOP_UNDEVELOPED_PENALTY                         4.0      /* Positive because it is designed to UNDO a penalty */
-#define BISHOP_PAWN_TRAPPED_CORNER_PENALTY               -10.0
-#define BISHOP_KNIGHT_DEFENSE_BONUS                        4.0
+#define MINOR_PIECE_PAWN_DEFENSE_BONUS                     4.0f
 
-#define UNDEFENDED_MINOR_PIECE_PENALTY                    -5.0
+#define KNIGHT_PAWN_DIMINISH                              -5.0f
+#define KNIGHT_OUTPOST_BONUS                               7.0f
+#define KNIGHT_TRAPPED_PENALTY                           -15.0f
+#define KNIGHT_BLOCKS_PAWN_PENALTY                        -4.0f
+#define KNIGHT_UNDEVELOPED_PENALTY                        -4.0f
+#define KNIGHT_MOBILITY_PAWN_CONTROL_PENALTY              -2.0f
 
-#define ROOK_PAWN_INCREASE                                 3.0
-#define ROOK_OPEN_FILE_BONUS                               7.0
-#define ROOK_PENULTIMATE_RANK_BONUS                        6.0
-#define ROOK_ULTIMATE_RANK_BONUS                           3.0
-#define ROOK_TARRASCH_BONUS                                6.0
-#define ROOK_BEHIND_UNCASTLED_KING_PENALTY                -4.0
-#define ROOK_ENEMY_QUEEN_FILE_BONUS                        5.0
-#define ROOK_MUTUAL_DEFENSE_BONUS                          8.0
+#define BISHOP_PAIR_BONUS                                 15.0f     /* Counted twice, once per bishop */
+#define BISHOP_BAD_PENALTY                                -9.0f
+#define BISHOP_COLOR_WEAK_PENALTY                         -2.0f     /* Multiplied by severity of color weakness */
+#define BISHOP_UNDEVELOPED_PENALTY                        -4.0f
+#define BISHOP_PAWN_TRAPPED_CORNER_PENALTY               -10.0f
 
-#define QUEEN_OVERLAPPING_ATTACK_BONUS                     4.0
-#define QUEEN_KING_XRAY_BONUS                              1.0
+#define UNDEFENDED_MINOR_PIECE_PENALTY                    -5.0f
 
-#define KING_PAWN_SHIELD_IMMEDIATE                         2.0
-#define KING_PAWN_SHIELD_ONE_DISTANT                       1.0
-#define KING_STORMING_PAWN_PENALTY                         0.5
-#define KING_TROPISM_PAWN_WEIGHT                           0.0
-#define KING_TROPISM_KNIGHT_WEIGHT                         0.5
-#define KING_TROPISM_BISHOP_WEIGHT                         1.0
-#define KING_TROPISM_ROOK_WEIGHT                           1.0
-#define KING_TROPISM_CARDINAL_WEIGHT                       2.0
-#define KING_TROPISM_MARSHAL_WEIGHT                        1.25
-#define KING_TROPISM_QUEEN_WEIGHT                          2.0
-#define KING_TROPISM_KING_WEIGHT                           0.0
-#define KING_ZONE_ATTACKED_BY_PAWN                         2.0
-#define KING_ZONE_ATTACKED_BY_KNIGHT                       1.5
-#define KING_ZONE_ATTACKED_BY_BISHOP                       1.5
-#define KING_ZONE_ATTACKED_BY_ROOK                         3.5
-#define KING_ZONE_ATTACKED_BY_CARDINAL                     5.0
-#define KING_ZONE_ATTACKED_BY_MARSHAL                      4.5
-#define KING_ZONE_ATTACKED_BY_QUEEN                        5.0
-#define KING_ZONE_ATTACKED_BY_KING                         2.5
-#define KING_ENDGAME_CENTRALITY                            2.0
+#define ROOK_PAWN_INCREASE                                 3.0f
+#define ROOK_OPEN_FILE_BONUS                               7.0f
+#define ROOK_PENULTIMATE_RANK_BONUS                        6.0f
+#define ROOK_ULTIMATE_RANK_BONUS                           3.0f
+#define ROOK_TARRASCH_BONUS                                6.0f
+#define ROOK_ENEMY_QUEEN_FILE_BONUS                        5.0f
+#define ROOK_MUTUAL_DEFENSE_BONUS                          8.0f
 
-#define VULNERABLE_DISCOUNT                                0.8      /* Coefficient for piece value for pieces left en prise.
+#define CARDINAL_KING_NET_PAIR_BONUS                       3.0f
+
+#define QUEEN_OVERLAPPING_ATTACK_BONUS                     4.0f
+#define QUEEN_KING_XRAY_BONUS                              1.0f
+
+#define KING_PAWN_SHIELD_IMMEDIATE                         2.0f
+#define KING_PAWN_SHIELD_ONE_DISTANT                       1.0f
+#define KING_STORMING_PAWN_PENALTY                         0.5f
+#define KING_TROPISM_PAWN_WEIGHT                           0.0f
+#define KING_TROPISM_KNIGHT_WEIGHT                         0.5f
+#define KING_TROPISM_BISHOP_WEIGHT                         1.0f
+#define KING_TROPISM_ROOK_WEIGHT                           1.0f
+#define KING_TROPISM_CARDINAL_WEIGHT                       2.0f
+#define KING_TROPISM_MARSHAL_WEIGHT                        1.25f
+#define KING_TROPISM_QUEEN_WEIGHT                          2.0f
+#define KING_TROPISM_KING_WEIGHT                           0.0f
+#define KING_ZONE_ATTACKED_BY_PAWN                         2.0f
+#define KING_ZONE_ATTACKED_BY_KNIGHT                       1.5f
+#define KING_ZONE_ATTACKED_BY_BISHOP                       1.5f
+#define KING_ZONE_ATTACKED_BY_ROOK                         3.5f
+#define KING_ZONE_ATTACKED_BY_CARDINAL                     5.0f
+#define KING_ZONE_ATTACKED_BY_MARSHAL                      4.5f
+#define KING_ZONE_ATTACKED_BY_QUEEN                        5.0f
+#define KING_ZONE_ATTACKED_BY_KING                         2.5f
+#define KING_ENDGAME_CENTRALITY                            2.0f
+
+#define VULNERABLE_DISCOUNT                                0.8f     /* Coefficient for piece value for pieces left en prise.
                                                                        (Effectively, though not yet actually, lost.) */
-#define ASYMMETRICAL_ATTACK_BONUS                          4.0      /* Bonus for attacking the opponent in a way that they cannot attack back */
+#define ASYMMETRICAL_ATTACK_BONUS                          4.0f     /* Bonus for attacking the opponent in a way that they cannot attack back */
 
-#define ABSOLUTE_PIN_BONUS                                 6.0      /* Bonuses for various types of pins */
-#define PARTIAL_PIN_BONUS                                  2.0
-#define RELATIVE_PIN_BONUS                                 4.0
-#define PARTIAL_RELATIVE_PIN_BONUS                         2.0
-#define TRAPPED_PIECE_PENALTY                             -5.0      /* Penalty per trapped piece */
-#define TRAPPED_PIECE_RATIO                                0.5
+#define ABSOLUTE_PIN_BONUS                                 6.0f     /* Bonuses for various types of pins */
+#define PARTIAL_PIN_BONUS                                  2.0f
+#define RELATIVE_PIN_BONUS                                 4.0f
+#define PARTIAL_RELATIVE_PIN_BONUS                         2.0f
+#define TRAPPED_PIECE_PENALTY                             -5.0f     /* Penalty per trapped piece */
+#define TRAPPED_PIECE_RATIO                                0.5f
 
 /**************************************************************************************************
  Typedefs  */
+
 
 /**************************************************************************************************
  Prototypes  */
@@ -179,22 +180,28 @@ unsigned int getQueenXRay(unsigned char, GameState*, Move*);
 
 float pawnstructure(unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, GameState*);
 bool isIsolatedPawn(unsigned char, unsigned char, GameState*);
-bool isBackwardPawn(unsigned char, unsigned char, Move*, unsigned char, GameState*);
+bool isBackwardPawn(unsigned char, unsigned char, Move*, unsigned int, GameState*);
 bool isConnectedPawn(unsigned char, unsigned char, GameState*);
 bool isPassedPawn(unsigned char, unsigned char, GameState*);
 bool isCandidatePassedPawn(unsigned char, unsigned char, GameState*);
-bool isUnstoppablePawn(unsigned char, unsigned char, Move*, unsigned char, Move*, unsigned char, GameState*);
+bool isUnstoppablePawn(unsigned char, unsigned char, Move*, unsigned int, Move*, unsigned int, GameState*);
 bool isSentryPawn(unsigned char, unsigned char, GameState*);
 
-float development(bool, GameState* gs);
+float development(bool, GameState*);
 
 float pieceeval(unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int,
                 unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, GameState*);
+float minorPiecePawnDefense(unsigned char, Move*, unsigned int);
+float colorComplexWeakness(unsigned char*, unsigned char, GameState*);
+//unsigned char darkSquares(unsigned char*);
+//unsigned char lightSquares(unsigned char*);
+
 float pawnEval(unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, GameState*);
 float pawnBlockade(unsigned char, GameState*);
 float pawnBlocked_DEFG(unsigned char, Move*, unsigned int, GameState*);
 float pawnBlocked(unsigned char, Move*, unsigned int, GameState*);
-float knightEval(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, GameState*);
+
+float knightEval(unsigned char, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, GameState*);
 float knightDecreasePawnVal(GameState*);
 float knightOutpost(unsigned char, Move*, unsigned int, Move*, unsigned int, GameState*);
 float knightTrapped(unsigned char);
@@ -202,28 +209,33 @@ float knightBlockingPawn(unsigned char, GameState*);
 float knightMobility(unsigned char, Move*, unsigned int, Move*, unsigned int);
 float knightBishopDefense(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, GameState*);
 float knightUndefended(unsigned char, Move*, unsigned int);
-float bishopEval(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, unsigned char*, unsigned char, Move*, unsigned int, GameState*);
+
+float bishopEval(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, Move*, unsigned int, GameState*);
 float bishopPair(unsigned char, unsigned char*, unsigned char, GameState*);
 float badBishop(unsigned char, Move*, unsigned int, GameState*);
-float bishopColorWeakness(unsigned char*, unsigned char, GameState*);
-unsigned char darkSquares(unsigned char*);
-unsigned char lightSquares(unsigned char*);
 float bishopTrapped(unsigned char, Move*, unsigned int);
 float bishopKnightDefense(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, GameState*);
 float bishopUndefended(unsigned char, Move*, unsigned int);
-float rookEval(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, unsigned char*, unsigned char, GameState*);
+
+float rookEval(unsigned char, Move*, unsigned int, GameState*);
 float rookIncreasePawnVal(GameState*);
 float rookOpenFile(unsigned char, GameState*);
 float rookHighRank(unsigned char, GameState*);
-float Tarrasch(unsigned char index, unsigned char*, unsigned char, unsigned char*, unsigned char, GameState*);
+float Tarrasch(unsigned char, GameState*);
 float rookEnemyQueen(unsigned char, GameState*);
-float rookMutualDefense(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, GameState*);
-float queenEval(unsigned char index, unsigned char*, unsigned char, Move*, unsigned int, Move*, unsigned int, GameState*);
-float queenEarlyDevelopment(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, GameState*);
+float rookMutualDefense(unsigned char, Move*, unsigned int, GameState*);
+
+float marshalEval(unsigned char, GameState*);
+
+float cardinalEval(unsigned char, GameState*);
+float cardinalKingNet(unsigned char, GameState*);
+
+float queenEval(unsigned char, Move*, unsigned int, Move*, unsigned int, GameState*);
+float queenOverlappingAttacks(unsigned char, Move*, unsigned int, GameState*);
 float queenKingTropism(unsigned char, Move*, unsigned int, GameState*);
 unsigned char bfs(unsigned char*, unsigned char, unsigned char, unsigned char);
+
 float kingEval(unsigned char, unsigned char*, unsigned char, Move*, unsigned int, GameState*);
-float kingCastlingRights(unsigned char, GameState*);
 float kingPawnShield(unsigned char, GameState*);
 float kingPawnStorm(unsigned char, unsigned char*, unsigned char, GameState*);
 float kingTropism(unsigned char, unsigned char*, unsigned char, GameState*);
@@ -249,9 +261,9 @@ unsigned char getPawns(bool, GameState*, unsigned char*);
 unsigned char getCol(unsigned char, unsigned char*);
 unsigned char getRow(unsigned char, unsigned char*);
 
-float phase(GameState*);
-unsigned char phase_discrete(GameState*);
-unsigned char phase_alphas(float, float*);
+float openingness(GameState* gs);
+float endgameness(GameState* gs);
+unsigned char phase_alphas(GameState* gs, float* w);
 
 /**************************************************************************************************
  Globals  */
@@ -264,26 +276,34 @@ unsigned char phase_alphas(float, float*);
    Differs from gamestate.h getMoves() because you may specify a team not necessarily now to move. */
 unsigned int getMovesForTeam(bool white, GameState* gs, Move* buffer)
   {
+    GameState tmp;
+    GameState* moveState = gs;
+
     unsigned int movesCtr = 0;
     Move potentialmoves[_NONE];                                     //  Assumes generous upper bound of 64 moves per piece.
     unsigned int potentialmovesCtr = 0;
     unsigned int i;
     unsigned char index;
 
+    if(white != gs->whiteToMove)
+      {
+        copyGameState(gs, &tmp);
+        tmp.whiteToMove = white;                                    //  Pretend this team really is to move...
+        tmp.previousDoublePawnMove = 0;                             //  but it inherits no en-passant privilege.
+        moveState = &tmp;
+      }
+
     for(index = 0; index < _NONE; index++)
       {
-        if((white && isWhite(index, gs)) || (!white && isBlack(index, gs)))
+        if((white && isWhite(index, moveState)) || (!white && isBlack(index, moveState)))
           {
-            potentialmovesCtr = getMovesIndex(index, gs, potentialmoves);
-            if(potentialmovesCtr > 0)
+            potentialmovesCtr = getMovesIndex(index, moveState, potentialmoves);
+            for(i = 0; i < potentialmovesCtr; i++)
               {
-                for(i = 0; i < potentialmovesCtr; i++)
-                  {
-                    buffer[movesCtr].from = potentialmoves[i].from;
-                    buffer[movesCtr].to = potentialmoves[i].to;
-                    buffer[movesCtr].promo = potentialmoves[i].promo;
-                    movesCtr++;
-                  }
+                buffer[movesCtr].from = potentialmoves[i].from;
+                buffer[movesCtr].to = potentialmoves[i].to;
+                buffer[movesCtr].promo = potentialmoves[i].promo;
+                movesCtr++;
               }
           }
       }
@@ -422,10 +442,9 @@ unsigned int getPawnTargetsTeam(bool white, GameState* gs, Move* buffer)
 /* Negamax rule: ALWAYS EVALUATE FOR THE SIDE TO MOVE. */
 float score(GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     float hPos, hNeg;
     unsigned char win;
-    float gamePhase;
     float phaseWeights[3];
     unsigned int i;
 
@@ -473,13 +492,12 @@ float score(GameState* gs)
     if(win != GAME_ONGOING)                                         //  In chess, for a state to be a decisive win, the side to move is necessarily
       {                                                             //  checkmated--which is the worst possible state.
         if(win == GAME_OVER_STALEMATE)
-          return 0.0;
+          return 0.0f;
         else
           return -INFINITY;
       }
 
-    gamePhase = phase(gs);
-    phase_alphas(gamePhase, phaseWeights);
+    phase_alphas(gs, phaseWeights);
 
     //////////////////////////////////////////////////////////////////  Compute the following only ONCE
     whiteMaterialLength = getWhite(gs, whiteMaterial);              //  unsigned chars
@@ -690,7 +708,7 @@ float score(GameState* gs)
 float material(unsigned char* posTeam, unsigned char posLen, GameState* gs)
   {
     unsigned char i;
-    float h = 0.0;
+    float h = 0.0f;
 
     for(i = 0; i < posLen; i++)
       h += materialLookup(posTeam[i], gs);
@@ -714,7 +732,7 @@ float materialLookup(unsigned char i, GameState* gs)
       return MARSHAL;
     if(isQueen(i, gs))
       return QUEEN;
-    return 0.0;
+    return 0.0f;
   }
 
 /**************************************************************************************************
@@ -723,12 +741,12 @@ float materialLookup(unsigned char i, GameState* gs)
 float mobility(Move* posMoves, unsigned int posMovesLen, GameState* gs)
   {
     unsigned int i;
-    float h = 0.0;
+    float h = 0.0f;
 
     for(i = 0; i < posMovesLen; i++)
       {
         if(!isQueen(posMoves[i].from, gs))
-          h += 1.0;
+          h += 1.0f;
       }
 
     return h;
@@ -740,7 +758,7 @@ float mobility(Move* posMoves, unsigned int posMovesLen, GameState* gs)
    (we do not want to encourage Mexican standoffs, say, between two bishops, staring at each other) */
 float attacks(Move* posMoves, unsigned int posMovesLen, Move* negMoves, unsigned int negMovesLen, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int i, j;
 
     for(i = 0; i < posMovesLen; i++)                                //  Add bonuses for positive team.
@@ -763,7 +781,7 @@ float attacks(Move* posMoves, unsigned int posMovesLen, Move* negMoves, unsigned
    Award points for general coverage. */
 float coverage(Move* posCover, unsigned int posCoverLen, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int i;
     float coveredVal;                                               //  Value of the piece covered by another.
     float avengerVal;                                               //  The one to capture back if you're captured.
@@ -774,11 +792,11 @@ float coverage(Move* posCover, unsigned int posCoverLen, GameState* gs)
         avengerVal = materialLookup(posCover[i].from, gs);
 
         if(coveredVal < avengerVal)                                 //  e.g. queen covering pawn.
-          h += 2.0;
+          h += 2.0f;
         else if(coveredVal == avengerVal)                           //  Mutual defense.
-          h += 3.0;
+          h += 3.0f;
         else                                                        //  e.g. pawn covering queen (not very good).
-          h += 1.0;
+          h += 1.0f;
       }
 
     return h;
@@ -896,7 +914,7 @@ unsigned int getCoverageIndex(unsigned char index, GameState* gs, Move* buffer)
    AND that the forward diagonal is occupied by a friendly piece. */
 unsigned int getPawnCoverage(unsigned char index, GameState* gs, Move* buffer)
   {
-    unsigned char movesCtr = 0;
+    unsigned int movesCtr = 0;
 
     if(isWhite(index, gs))
       {
@@ -1675,10 +1693,7 @@ unsigned int getBishopScope(unsigned char index, GameState* gs, Move* buffer)
     unsigned char tmpBuff[10];                                      //  Upper bound in any direction is 10 on a 10 x 10 board.
     char* flags;
 
-    if(isWhite(index, gs))
-      flags = "WB";                                                 //  Scope: stop and include white or black.
-    else
-      flags = "WB";                                                 //  Scope: stop and include white or black.
+    flags = "WB";                                                   //  Scope: stop and include white or black.
 
     len = ulSet(index, flags, gs, tmpBuff);                         //  Up-left
     for(i = 0; i < len; i++)
@@ -1740,10 +1755,7 @@ unsigned int getRookScope(unsigned char index, GameState* gs, Move* buffer)
     unsigned char tmpBuff[10];                                      //  Upper bound in any direction is 10 on a 10 x 10 board.
     char* flags;
 
-    if(isWhite(index, gs))
-      flags = "WB";                                                 //  Scope: stop and include white or black.
-    else
-      flags = "WB";                                                 //  Scope: stop and include white or black.
+    flags = "WB";                                                   //  Scope: stop and include white or black.
 
     len = uSet(index, flags, gs, tmpBuff);                          //  Up
     for(i = 0; i < len; i++)
@@ -1805,10 +1817,7 @@ unsigned int getCardinalScope(unsigned char index, GameState* gs, Move* buffer)
     unsigned char tmpBuff[10];                                      //  Upper bound in any direction is 10 on a 10 x 10 board.
     char* flags;
 
-    if(isWhite(index, gs))
-      flags = "WB";                                                 //  Scope: stop and include white or black.
-    else
-      flags = "WB";                                                 //  Scope: stop and include white or black.
+    flags = "WB";                                                   //  Scope: stop and include white or black.
 
     len = ulSet(index, flags, gs, tmpBuff);                         //  Up-left
     for(i = 0; i < len; i++)
@@ -1930,10 +1939,7 @@ unsigned int getMarshalScope(unsigned char index, GameState* gs, Move* buffer)
     unsigned char tmpBuff[10];                                      //  Upper bound in any direction is 10 on a 10 x 10 board.
     char* flags;
 
-    if(isWhite(index, gs))
-      flags = "WB";                                                 //  Scope: stop and include white or black.
-    else
-      flags = "WB";                                                 //  Scope: stop and include white or black.
+    flags = "WB";                                                   //  Scope: stop and include white or black.
 
     len = uSet(index, flags, gs, tmpBuff);                          //  Up
     for(i = 0; i < len; i++)
@@ -2055,10 +2061,7 @@ unsigned int getQueenScope(unsigned char index, GameState* gs, Move* buffer)
     unsigned char tmpBuff[10];                                      //  Upper bound in any direction is 10 on a 10 x 10 board.
     char* flags;
 
-    if(isWhite(index, gs))
-      flags = "WB";                                                 //  Scope: stop and include white or black.
-    else
-      flags = "WB";                                                 //  Scope: stop and include white or black.
+    flags = "WB";                                                   //  Scope: stop and include white or black.
 
     len = uSet(index, flags, gs, tmpBuff);                          //  Up
     for(i = 0; i < len; i++)
@@ -2772,7 +2775,7 @@ float pawnstructure(unsigned char* posTeam, unsigned char posLen,
 
                     GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
     // Convert to (COL, ROW) pairs
     // e.g. 0 1 2 3 4 5 6 7 8 9
@@ -2926,9 +2929,9 @@ bool isIsolatedPawn(unsigned char pawnCol, unsigned char pawnRow, GameState* gs)
         2 . . . . . . . .   . . N . . . . .
         1 . . . . . . . .   P P P . . P P P
         0 . . . . . . . .   R . B Q K B . R  */
-bool isBackwardPawn(unsigned char pawnCol, unsigned char pawnRow, Move* posPawnCoverage, unsigned char posPawnCoverageLen, GameState* gs)
+bool isBackwardPawn(unsigned char pawnCol, unsigned char pawnRow, Move* posPawnCoverage, unsigned int posPawnCoverageLen, GameState* gs)
   {
-    unsigned char i = 0;
+    unsigned int i = 0;
     unsigned char index = pawnRow * 10 + pawnCol;
     bool lBackward = false;
     bool rBackward = false;
@@ -3271,12 +3274,12 @@ bool isCandidatePassedPawn(unsigned char pawnCol, unsigned char pawnRow, GameSta
         2 . . . . . . . . . .
         1 . . . . . . . . . .
         0 . . . . . . . . . .  */
-bool isUnstoppablePawn(unsigned char pawnCol, unsigned char pawnRow, Move* negMove, unsigned char negMoveLen, Move* negPawnAttackedSq, unsigned char negPawnAttSqLen, GameState* gs)
+bool isUnstoppablePawn(unsigned char pawnCol, unsigned char pawnRow, Move* negMove, unsigned int negMoveLen, Move* negPawnAttackedSq, unsigned int negPawnAttSqLen, GameState* gs)
   {
     unsigned char index = pawnRow * 10 + pawnCol;
     unsigned char c[10];
     signed char i;
-    unsigned char j;
+    unsigned int j;
     bool hit = false;
 
     if(isSemiOpenFile(index, gs))
@@ -3363,126 +3366,31 @@ bool isSentryPawn(unsigned char pawnCol, unsigned char pawnRow, GameState* gs)
 /* Penalty for minor pieces still on their home row if the majority of major pieces have moved. */
 float development(bool white, GameState* gs)
   {
-    float h = 0.0;
-
-    unsigned char indexRook, indexCardinal, indexMarshal, indexQueen;
-    bool boolRook = true, boolCardinal = true, boolMarshal = true, boolQueen = true;
-    unsigned char totalMajorPieces = 0;
-    unsigned char totalMajorPiecesAdvanced = 0;
-
-    unsigned char indexKnight, indexBishop;
-
-    signed char i;
+    float h = 0.0f;
 
     if(white)
       {
-        i = 0;
-        while(i < _NONE)
-          {
-            if(isWhite(i, gs) && isKnight(i, gs))                   //  Find the knight farthest from white's home row.
-              indexKnight = i;
-            if(isWhite(i, gs) && isBishop(i, gs))                   //  Find the bishop farthest from white's home row.
-              indexBishop = i;
+        if(gs->board[11] == _WHITE_KNIGHT)
+          h += KNIGHT_UNDEVELOPED_PENALTY;
+        if(gs->board[18] == _WHITE_KNIGHT)
+          h += KNIGHT_UNDEVELOPED_PENALTY;
 
-            if(isWhite(i, gs) && isRook(i, gs) && boolRook)         //  Find the rook nearest white's home row.
-              {
-                indexRook = i;
-                boolRook = false;
-                totalMajorPieces++;
-                if(row(indexRook) > 1)
-                  totalMajorPiecesAdvanced++;
-              }
-                                                                    //  Find the cardinal nearest white's home row.
-            if(isWhite(i, gs) && isCardinal(i, gs) && boolCardinal)
-              {
-                indexCardinal = i;
-                boolCardinal = false;
-                totalMajorPieces++;
-                if(row(indexCardinal) > 1)
-                  totalMajorPiecesAdvanced++;
-              }
-                                                                    //  Find the marshal nearest white's home row.
-            if(isWhite(i, gs) && isMarshal(i, gs) && boolMarshal)
-              {
-                indexMarshal = i;
-                boolMarshal = false;
-                totalMajorPieces++;
-                if(row(indexMarshal) > 1)
-                  totalMajorPiecesAdvanced++;
-              }
-            if(isWhite(i, gs) && isQueen(i, gs) && boolQueen)       //  Find the queen nearest white's home row.
-              {
-                indexQueen = i;
-                boolQueen = false;
-                totalMajorPieces++;
-                if(row(indexQueen) > 1)
-                  totalMajorPiecesAdvanced++;
-              }
-            i++;
-          }
-
-        if(((float)totalMajorPiecesAdvanced / (float)totalMajorPieces) > 0.5)
-          {
-            if(row(indexKnight) <= 1)
-              h += KNIGHT_UNDEVELOPED_PENALTY;
-            if(row(indexBishop) <= 1)
-              h += BISHOP_UNDEVELOPED_PENALTY;
-          }
+        if(gs->board[12] == _WHITE_BISHOP)
+          h += BISHOP_UNDEVELOPED_PENALTY;
+        if(gs->board[17] == _WHITE_BISHOP)
+          h += BISHOP_UNDEVELOPED_PENALTY;
       }
     else
       {
-        i = _NONE - 1;
-        while(i >= 0)
-          {
-            if(isBlack(i, gs) && isKnight(i, gs))                   //  Find the knight farthest from black's home row.
-              indexKnight = i;
-            if(isBlack(i, gs) && isBishop(i, gs))                   //  Find the bishop farthest from black's home row.
-              indexBishop = i;
+        if(gs->board[81] == _BLACK_KNIGHT)
+          h += KNIGHT_UNDEVELOPED_PENALTY;
+        if(gs->board[88] == _BLACK_KNIGHT)
+          h += KNIGHT_UNDEVELOPED_PENALTY;
 
-            if(isBlack(i, gs) && isRook(i, gs) && boolRook)         //  Find the rook nearest black's home row.
-              {
-                indexRook = i;
-                boolRook = false;
-                totalMajorPieces++;
-                if(row(indexRook) < 8)
-                  totalMajorPiecesAdvanced++;
-              }
-                                                                    //  Find the cardinal nearest black's home row.
-            if(isBlack(i, gs) && isCardinal(i, gs) && boolCardinal)
-              {
-                indexCardinal = i;
-                boolCardinal = false;
-                totalMajorPieces++;
-                if(row(indexCardinal) < 8)
-                  totalMajorPiecesAdvanced++;
-              }
-                                                                    //  Find the marshal nearest black's home row.
-            if(isBlack(i, gs) && isMarshal(i, gs) && boolMarshal)
-              {
-                indexMarshal = i;
-                boolMarshal = false;
-                totalMajorPieces++;
-                if(row(indexMarshal) < 8)
-                  totalMajorPiecesAdvanced++;
-              }
-            if(isBlack(i, gs) && isQueen(i, gs) && boolQueen)       //  Find the queen nearest black's home row.
-              {
-                indexQueen = i;
-                boolQueen = false;
-                totalMajorPieces++;
-                if(row(indexQueen) < 8)
-                  totalMajorPiecesAdvanced++;
-              }
-            i--;
-          }
-
-        if(((float)totalMajorPiecesAdvanced / (float)totalMajorPieces) > 0.5)
-          {
-            if(row(indexKnight) >= 8)
-              h += KNIGHT_UNDEVELOPED_PENALTY;
-            if(row(indexBishop) >= 8)
-              h += BISHOP_UNDEVELOPED_PENALTY;
-          }
+        if(gs->board[82] == _BLACK_BISHOP)
+          h += BISHOP_UNDEVELOPED_PENALTY;
+        if(gs->board[87] == _BLACK_BISHOP)
+          h += BISHOP_UNDEVELOPED_PENALTY;
       }
 
     return h;
@@ -3506,47 +3414,50 @@ float pieceeval(unsigned char* posTeam, unsigned char posLen,
 
                 GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char i;
+
+    h += pawnEval(posTeam, posLen,
+                  posMoves, posMovesLen,
+                  posPawnTargets, posPawnTargetsLen,
+                  gs);
+
+    h += colorComplexWeakness(posTeam, posLen, gs);
 
     for(i = 0; i < posLen; i++)
       {
         if(isPawn(posTeam[i], gs))
-          h += pawnEval(posTeam, posLen,
-                        posMoves, posMovesLen,
-                        posPawnTargets, posPawnTargetsLen,
-                        gs);
-        else if(isKnight(posTeam[i], gs) || isCardinal(posTeam[i], gs) || isMarshal(posTeam[i], gs))
+          continue;
+        else if(isKnight(posTeam[i], gs))
           h += knightEval(posTeam[i],
-                          posTeam, posLen,
                           posMoves, posMovesLen,
                           posCoverage, posCoverageLen,
                           posPawnCoverage, posPawnCoverageLen,
                           posPawnTargets, posPawnTargetsLen,
                           negPawnTargets, negPawnTargetsLen,
                           gs);
-        else if(isBishop(posTeam[i], gs) || isCardinal(posTeam[i], gs))
+        else if(isBishop(posTeam[i], gs))
           h += bishopEval(posTeam[i],
                           posTeam, posLen,
                           posCoverage, posCoverageLen,
                           posPawnCoverage, posPawnCoverageLen,
                           posScope, posScopeLen,
-                          negTeam, negLen,
                           negPawnTargets, negPawnTargetsLen,
                           gs);
-        else if(isRook(posTeam[i], gs) || isMarshal(posTeam[i], gs))
+        else if(isRook(posTeam[i], gs))
           h += rookEval(posTeam[i],
-                        posTeam, posLen,
                         posCoverage, posCoverageLen,
-                        negTeam, negLen,
                         gs);
+        else if(isMarshal(posTeam[i], gs))
+          h += marshalEval(posTeam[i], gs);
+        else if(isCardinal(posTeam[i], gs))
+          h += cardinalEval(posTeam[i], gs);
         else if(isQueen(posTeam[i], gs))
           h += queenEval(posTeam[i],
-                         posTeam, posLen,
                          posMoves, posMovesLen,
                          posXRay, posXRayLen,
                          gs);
-        else
+        else if(isKing(posTeam[i], gs))
           h += kingEval(posTeam[i],
                         negTeam, negLen,
                         negMoves, negMovesLen,
@@ -3556,15 +3467,83 @@ float pieceeval(unsigned char* posTeam, unsigned char posLen,
     return h;
   }
 
+/* Used by both Knights and Bishops: A minor piece defended by a pawn is favorably placed. */
+float minorPiecePawnDefense(unsigned char index, Move* posPawnCoverage, unsigned int posPawnCoverageLen)
+  {
+    unsigned int i = 0;
+
+    while(i < posPawnCoverageLen && posPawnCoverage[i].to != index)
+      i++;
+
+    if(i < posPawnCoverageLen)
+      return MINOR_PIECE_PAWN_DEFENSE_BONUS;
+
+    return 0.0f;
+  }
+
+/* Color weakness: If a position is heavily committed to one color complex, the opposite color complex may be porous. Encourage balance. */
+float colorComplexWeakness(unsigned char* posTeam, unsigned char posLen, GameState* gs)
+  {
+    unsigned char darkCtr = 0;
+    unsigned char lightCtr = 0;
+    unsigned char i;
+
+    for(i = 0; i < posLen; i++)
+      {
+        if(isPawn(posTeam[i], gs) || isBishop(posTeam[i], gs))
+          {
+            if((row(posTeam[i]) + col(posTeam[i])) & 1)
+              darkCtr++;
+            else
+              lightCtr++;
+          }
+      }
+
+    return (float)abs(darkCtr - lightCtr) * BISHOP_COLOR_WEAK_PENALTY;
+  }
+
+/*
+unsigned char darkSquares(unsigned char* sq)
+  {
+    sq[0] = 0;   sq[1] = 2;   sq[2] = 4;   sq[3] = 6;   sq[4] = 8;
+    sq[5] = 11;  sq[6] = 13;  sq[7] = 15;  sq[8] = 17;  sq[9] = 19;
+    sq[10] = 20; sq[11] = 22; sq[12] = 24; sq[13] = 26; sq[14] = 28;
+    sq[15] = 31; sq[16] = 33; sq[17] = 35; sq[18] = 37; sq[19] = 39;
+    sq[20] = 40; sq[21] = 42; sq[22] = 44; sq[23] = 46; sq[24] = 48;
+    sq[25] = 51; sq[26] = 53; sq[27] = 55; sq[28] = 57; sq[29] = 59;
+    sq[30] = 60; sq[31] = 62; sq[32] = 64; sq[33] = 66; sq[34] = 68;
+    sq[35] = 71; sq[36] = 73; sq[37] = 75; sq[38] = 77; sq[39] = 79;
+    sq[40] = 80; sq[41] = 82; sq[42] = 84; sq[43] = 86; sq[44] = 88;
+    sq[45] = 91; sq[46] = 93; sq[47] = 95; sq[48] = 97; sq[49] = 99;
+    return 50;
+  }
+
+unsigned char lightSquares(unsigned char* sq)
+  {
+    sq[0] = 1;   sq[1] = 3;   sq[2] = 5;   sq[3] = 7;   sq[4] = 9;
+    sq[5] = 10;  sq[6] = 12;  sq[7] = 14;  sq[8] = 16;  sq[9] = 18;
+    sq[10] = 21; sq[11] = 23; sq[12] = 25; sq[13] = 27; sq[14] = 29;
+    sq[15] = 30; sq[16] = 32; sq[17] = 34; sq[18] = 36; sq[19] = 38;
+    sq[20] = 41; sq[21] = 43; sq[22] = 45; sq[23] = 47; sq[24] = 49;
+    sq[25] = 50; sq[26] = 52; sq[27] = 54; sq[28] = 56; sq[29] = 58;
+    sq[30] = 61; sq[31] = 63; sq[32] = 65; sq[33] = 67; sq[34] = 69;
+    sq[35] = 70; sq[36] = 72; sq[37] = 74; sq[38] = 76; sq[39] = 78;
+    sq[40] = 81; sq[41] = 83; sq[42] = 85; sq[43] = 87; sq[44] = 89;
+    sq[45] = 90; sq[46] = 92; sq[47] = 94; sq[48] = 96; sq[49] = 98;
+    return 50;
+  }
+*/
+
 /*  Pawn Evaluations  *****************************************************************************/
-/* Award points and issue penalties for individual pawn attributes.
-   These attributes are separate from Pawn Structure */
+
+/* Evaluate piece-specific pawn attributes for the entire indicated team.
+   Called exactly once per team evaluation. */
 float pawnEval(unsigned char* posTeam, unsigned char posLen,
                Move* posMoves, unsigned int posMovesLen,
                Move* posTeamPawnTargets, unsigned int posPawnTargetsLen,
                GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int i;
     unsigned char centerMap[_NONE];
 
@@ -3598,7 +3577,7 @@ float pawnEval(unsigned char* posTeam, unsigned char posLen,
 /* Blockade of stops */
 float pawnBlockade(unsigned char i, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
     if(isSemiOpenFile(i, gs) && !isOpenFile(i, gs))
       {
@@ -3614,7 +3593,7 @@ float pawnBlocked_DEFG(unsigned char i,
                        Move* posMoves, unsigned int posMovesLen,
                        GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int ctr1, ctr2;
 
     if(isWhite(i, gs))
@@ -3734,7 +3713,6 @@ float pawnBlocked_DEFG(unsigned char i,
 /*  Knight Evaluations  ***************************************************************************/
 /* Award points and issue penalties for individual knight attributes. */
 float knightEval(unsigned char index,
-                 unsigned char* posTeam, unsigned char posLen,
                  Move* posMoves, unsigned int posMovesLen,
                  Move* posCoverage, unsigned int posCoverageLen,
                  Move* posPawnCoverage, unsigned int posPawnCoverageLen,
@@ -3742,7 +3720,7 @@ float knightEval(unsigned char index,
                  Move* negTeamPawnTargets, unsigned int negPawnTargetsLen,
                  GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
     h += knightDecreasePawnVal(gs);
     h += knightOutpost(index,
@@ -3754,10 +3732,8 @@ float knightEval(unsigned char index,
     h += knightMobility(index,
                         posMoves, posMovesLen,
                         negTeamPawnTargets, negPawnTargetsLen);
-    h += knightBishopDefense(index,
-                             posTeam, posLen,
-                             posPawnCoverage, posPawnCoverageLen,
-                             gs);
+    h += minorPiecePawnDefense(index,
+                               posPawnCoverage, posPawnCoverageLen);
     h += knightUndefended(index, posCoverage, posCoverageLen);
 
     return h;
@@ -3779,7 +3755,7 @@ float knightDecreasePawnVal(GameState* gs)
           }
       }
 
-    return (20.0 - (float)wP - (float)bP) * KNIGHT_PAWN_DIMINISH;
+    return (20.0f - (float)wP - (float)bP) * KNIGHT_PAWN_DIMINISH;
   }
 
 /* Knight in an outpost is defended by a friendly pawn, unattacked by an enemy pawn, and on the 5th rank */
@@ -3788,7 +3764,7 @@ float knightOutpost(unsigned char index,
                     Move* negTeamPawnTargets, unsigned int negPawnTargetsLen,
                     GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int i = 0, j = 0;
 
     while(i < posPawnTargetsLen && posTeamPawnTargets[i].to != index)
@@ -3814,7 +3790,7 @@ float knightTrapped(unsigned char index)
        index == 80 || index == 81 || index == 90 || index == 91 ||
        index == 88 || index == 89 || index == 98 || index == 99  )
       return KNIGHT_TRAPPED_PENALTY;
-    return 0.0;
+    return 0.0f;
   }
 
 /* Penalty for blocking a pawn. */
@@ -3827,11 +3803,11 @@ float knightBlockingPawn(unsigned char index, GameState* gs)
       }
     else
       {
-        if(row(index) == 6 && isBlack(u(index), gs) && isBlack(u(index), gs))
+        if(row(index) == 6 && isBlack(u(index), gs) && isPawn(u(index), gs))
           return KNIGHT_BLOCKS_PAWN_PENALTY;
       }
 
-    return 0.0;
+    return 0.0f;
   }
 
 /* Penalize knight-mobile squares controlled by enemy pawns */
@@ -3855,32 +3831,6 @@ float knightMobility(unsigned char index,
     return (float)mobCtr * KNIGHT_MOBILITY_PAWN_CONTROL_PENALTY;
   }
 
-/* Marginal bonus for a bishop defended by a pawn--yes, as SCORED BY A KNIGHT */
-float knightBishopDefense(unsigned char index,
-                          unsigned char* posTeam, unsigned char posLen,
-                          Move* posPawnCoverage, unsigned int posPawnCoverageLen,
-                          GameState* gs)
-  {
-    float h = 0.0;
-    unsigned char i;
-    unsigned int j;
-
-    for(i = 0; i < posLen; i++)
-      {
-        if(isBishop(posTeam[i], gs) || isCardinal(posTeam[i], gs))
-          {
-            j = 0;
-            while(j < posPawnCoverageLen && posPawnCoverage[j].to != posTeam[i])
-              j++;
-
-            if(j < posPawnCoverageLen)
-              h += KNIGHT_BISHOP_DEFENSE_BONUS;
-          }
-      }
-
-    return h;
-  }
-
 /* Penalty for an undefended minor piece */
 float knightUndefended(unsigned char index, Move* posCoverage, unsigned int posCoverageLen)
   {
@@ -3892,29 +3842,27 @@ float knightUndefended(unsigned char index, Move* posCoverage, unsigned int posC
     if(i == posCoverageLen)
       return UNDEFENDED_MINOR_PIECE_PENALTY;
 
-    return 0.0;
+    return 0.0f;
   }
 
 /*  Bishop Evaluations  ***************************************************************************/
+
 /* Award points and issue penalties for individual bishop attributes. */
 float bishopEval(unsigned char index,
                  unsigned char* posTeam, unsigned char posLen,
                  Move* posCoverage, unsigned int posCoverageLen,
                  Move* posPawnCoverage, unsigned int posPawnCoverageLen,
                  Move* posScope, unsigned int posScopeLen,
-                 unsigned char* negTeam, unsigned char negLen,
                  Move* negPawnAttacks, unsigned int negPawnAttacksLen,
                  GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
     h += bishopPair(index, posTeam, posLen, gs);
     h += badBishop(index, posScope, posScopeLen, gs);
-    h += bishopColorWeakness(posTeam, posLen, gs);
     h += bishopTrapped(index, negPawnAttacks, negPawnAttacksLen);
-    h += bishopKnightDefense(index,
-                             posTeam, posLen,
-                             posPawnCoverage, posPawnCoverageLen, gs);
+    h += minorPiecePawnDefense(index,
+                               posPawnCoverage, posPawnCoverageLen);
     h += bishopUndefended(index, posCoverage, posCoverageLen);
 
     return h;
@@ -3923,7 +3871,7 @@ float bishopEval(unsigned char index,
 /* Called on assumption that index has already been identified as a bishop */
 float bishopPair(unsigned char index, unsigned char* posTeam, unsigned char posLen, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char i = 0;
 
     while(i < posLen)
@@ -3944,7 +3892,7 @@ float badBishop(unsigned char index,
                 Move* posScope, unsigned int posScopeLen,
                 GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int i;
 
     for(i = 0; i < posScopeLen; i++)
@@ -3956,67 +3904,10 @@ float badBishop(unsigned char index,
     return h;
   }
 
-/* Color weakness */
-float bishopColorWeakness(unsigned char* posTeam, unsigned char posLen, GameState* gs)
-  {
-    unsigned char darkSq[50];
-    unsigned char i, j;
-    unsigned char darkCtr = 0, lightCtr = 0;
-
-    darkSquares(darkSq);
-
-    for(i = 0; i < posLen; i++)
-      {
-        if(isPawn(posTeam[i], gs) || isBishop(posTeam[i], gs))
-          {
-            j = 0;
-            while(j < 50 && darkSq[j] != posTeam[i])
-              j++;
-
-            if(j < 50)
-              darkCtr++;
-            else
-              lightCtr++;
-          }
-      }
-
-    return (float)abs(darkCtr - lightCtr) * BISHOP_COLOR_WEAK_PENALTY;
-  }
-
-unsigned char darkSquares(unsigned char* sq)
-  {
-    sq[0] = 0;   sq[1] = 2;   sq[2] = 4;   sq[3] = 6;   sq[4] = 8;
-    sq[5] = 11;  sq[6] = 13;  sq[7] = 15;  sq[8] = 17;  sq[9] = 19;
-    sq[10] = 20; sq[11] = 22; sq[12] = 24; sq[13] = 26; sq[14] = 28;
-    sq[15] = 31; sq[16] = 33; sq[17] = 35; sq[18] = 37; sq[19] = 39;
-    sq[20] = 40; sq[21] = 42; sq[22] = 44; sq[23] = 46; sq[24] = 48;
-    sq[25] = 51; sq[26] = 53; sq[27] = 55; sq[28] = 57; sq[29] = 59;
-    sq[30] = 60; sq[31] = 62; sq[32] = 64; sq[33] = 66; sq[34] = 68;
-    sq[35] = 71; sq[36] = 73; sq[37] = 75; sq[38] = 77; sq[39] = 79;
-    sq[40] = 80; sq[41] = 82; sq[42] = 84; sq[43] = 86; sq[44] = 88;
-    sq[45] = 91; sq[46] = 93; sq[47] = 95; sq[48] = 97; sq[49] = 99;
-    return 50;
-  }
-
-unsigned char lightSquares(unsigned char* sq)
-  {
-    sq[0] = 1;   sq[1] = 3;   sq[2] = 5;   sq[3] = 7;   sq[4] = 9;
-    sq[5] = 10;  sq[6] = 12;  sq[7] = 14;  sq[8] = 16;  sq[9] = 18;
-    sq[10] = 21; sq[11] = 23; sq[12] = 25; sq[13] = 27; sq[14] = 29;
-    sq[15] = 30; sq[16] = 32; sq[17] = 34; sq[18] = 36; sq[19] = 38;
-    sq[20] = 41; sq[21] = 43; sq[22] = 45; sq[23] = 47; sq[24] = 49;
-    sq[25] = 50; sq[26] = 52; sq[27] = 54; sq[28] = 56; sq[29] = 58;
-    sq[30] = 61; sq[31] = 63; sq[32] = 65; sq[33] = 67; sq[34] = 69;
-    sq[35] = 70; sq[36] = 72; sq[37] = 74; sq[38] = 76; sq[39] = 78;
-    sq[40] = 81; sq[41] = 83; sq[42] = 85; sq[43] = 87; sq[44] = 89;
-    sq[45] = 90; sq[46] = 92; sq[47] = 94; sq[48] = 96; sq[49] = 98;
-    return 50;
-  }
-
 /* Bishop trapped on edge by enemy pawns. */
 float bishopTrapped(unsigned char index, Move* negPawnAttacks, unsigned int negPawnAttacksLen)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int i;
 
     if(index == 10 || index == 20 || index == 70 || index == 80 ||
@@ -4027,32 +3918,6 @@ float bishopTrapped(unsigned char index, Move* negPawnAttacks, unsigned int negP
           i++;
         if(i < negPawnAttacksLen)
           h += BISHOP_PAWN_TRAPPED_CORNER_PENALTY;
-      }
-
-    return h;
-  }
-
-/* Marginal bonus for a knight defended by a pawn--yes, as SCORED BY A BISHOP */
-float bishopKnightDefense(unsigned char index,
-                          unsigned char* posTeam, unsigned char posLen,
-                          Move* posPawnCoverage, unsigned int posPawnCoverageLen,
-                          GameState* gs)
-  {
-    float h = 0.0;
-    unsigned char i;
-    unsigned int j;
-
-    for(i = 0; i < posLen; i++)
-      {
-        if(isKnight(posTeam[i], gs) || isCardinal(posTeam[i], gs) || isMarshal(posTeam[i], gs))
-          {
-            j = 0;
-            while(j < posPawnCoverageLen && posPawnCoverage[j].to != posTeam[i])
-              j++;
-
-            if(j < posPawnCoverageLen)
-              h += BISHOP_KNIGHT_DEFENSE_BONUS;
-          }
       }
 
     return h;
@@ -4069,25 +3934,24 @@ float bishopUndefended(unsigned char index, Move* posCoverage, unsigned int posC
     if(i == posCoverageLen)
       return UNDEFENDED_MINOR_PIECE_PENALTY;
 
-    return 0.0;
+    return 0.0f;
   }
 
 /*  Rook Evaluations  *****************************************************************************/
+
 /* Award points and issue penalties for individual rook attributes. */
 float rookEval(unsigned char index,
-               unsigned char* posTeam, unsigned char posLen,
                Move* posCoverage, unsigned int posCoverageLen,
-               unsigned char* negTeam, unsigned char negLen,
                GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
     h += rookIncreasePawnVal(gs);
     h += rookOpenFile(index, gs);
     h += rookHighRank(index, gs);
-    h += Tarrasch(index, posTeam, posLen, negTeam, negLen, gs);
+    h += Tarrasch(index, gs);
     h += rookEnemyQueen(index, gs);
-    h += rookMutualDefense(index, posTeam, posLen, posCoverage, posCoverageLen, gs);
+    h += rookMutualDefense(index, posCoverage, posCoverageLen, gs);
 
     return h;
   }
@@ -4108,7 +3972,7 @@ float rookIncreasePawnVal(GameState* gs)
           }
       }
 
-    return (20.0 - (float)wP - (float)bP) * ROOK_PAWN_INCREASE;
+    return (20.0f - (float)wP - (float)bP) * ROOK_PAWN_INCREASE;
   }
 
 /* Rook on open file */
@@ -4116,13 +3980,13 @@ float rookOpenFile(unsigned char index, GameState* gs)
   {
     if(isOpenFile(index, gs))
       return ROOK_OPEN_FILE_BONUS;
-    return 0.0;
+    return 0.0f;
   }
 
 /* Rook on penultimate (possibly also ultimate) rank */
 float rookHighRank(unsigned char index, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
     if(isWhite(index, gs))
       {
@@ -4146,27 +4010,28 @@ float rookHighRank(unsigned char index, GameState* gs)
    The idea behind the guideline is that
    (1) if a player's rook is behind his passed pawn, the rook protects it as it advances, and
    (2) if it is behind an opponent's passed pawn, the pawn cannot advance unless it is protected along its way. */
-float Tarrasch(unsigned char index,
-               unsigned char* posTeam, unsigned char posLen,
-               unsigned char* negTeam, unsigned char negLen,
-               GameState* gs)
+float Tarrasch(unsigned char index, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char mostAdvPawnRow;
     unsigned char column[10];
     unsigned char i = 0, j = 0;
 
-    while( i < posLen && !(isPawn(posTeam[i], gs) && sameSide(index, posTeam[i], gs)) )
+    getCol(index, column);
+
+    if(!isSemiOpenFile(index, gs))
+      return 0.0f;
+
+    while( i < 10 && !(isPawn(column[i], gs) && sameSide(index, column[i], gs)) )
       i++;
 
-    while( j < negLen && !(isPawn(negTeam[i], gs) && opposed(index, negTeam[j], gs)) )
+    while( j < 10 && !(isPawn(column[j], gs) && opposed(index, column[j], gs)) )
       j++;
 
-    if(isSemiOpenFile(index, gs) && i < posLen)                     //  Rook is on semi-open file and an ALLY pawn was found on the same file.
+    if(i < 10)                                                      //  Rook is on semi-open file and an ALLY pawn was found on the same file.
       {
         if(isWhite(index, gs))
           {
-            getCol(index, column);
             mostAdvPawnRow = 0;
             for(i = 0; i < 10; i++)
               {
@@ -4179,7 +4044,6 @@ float Tarrasch(unsigned char index,
           }
         else
           {
-            getCol(index, column);
             mostAdvPawnRow = 9;
             for(i = 0; i < 10; i++)
               {
@@ -4191,24 +4055,22 @@ float Tarrasch(unsigned char index,
               h += ROOK_TARRASCH_BONUS;
           }
       }
-    else if(isSemiOpenFile(index, gs) && j < negLen)                //  Rook is on semi-open file and an ENEMY pawn was found on the same file.
+    else if(j < 10)                                                 //  Rook is on semi-open file and an ENEMY pawn was found on the same file.
       {
         if(isWhite(index, gs))
           {
-            getCol(index, column);
             mostAdvPawnRow = 9;
             for(i = 0; i < 10; i++)
               {
                 if(isPawn(column[i], gs) && isBlack(column[i], gs) && row(column[i]) < mostAdvPawnRow)
                   mostAdvPawnRow = row(column[i]);
               }
-                                                                    //  Ally Pawn is ahead of Rook and is a passed Pawn.
+                                                                    //  Enemy pawn is ahead of the rook, and is a passed pawn.
             if(mostAdvPawnRow < row(index) && isPassedPawn(col(index), mostAdvPawnRow, gs))
               h += ROOK_TARRASCH_BONUS;
           }
         else
           {
-            getCol(index, column);
             mostAdvPawnRow = 0;
             for(i = 0; i < 10; i++)
               {
@@ -4244,114 +4106,138 @@ float rookEnemyQueen(unsigned char index, GameState* gs)
 
     if(i < 10)
       return ROOK_ENEMY_QUEEN_FILE_BONUS;
-    return 0.0;
+    return 0.0f;
   }
 
 /* Rooks defending each other */
 float rookMutualDefense(unsigned char index,
-                        unsigned char* posTeam, unsigned char posLen,
                         Move* posCoverage, unsigned int posCoverageLen,
                         GameState* gs)
   {
-    float h = 0.0;
-    unsigned char i = 0;
-    unsigned char rCtr = 0;
+    unsigned int i;
 
-    while(i < posLen)
+    for(i = 0; i < posCoverageLen; i++)
       {
-        if(isRook(posTeam[i], gs))
-          rCtr++;
-        i++;
+        if(posCoverage[i].to == index && isRook(posCoverage[i].from, gs))
+          return ROOK_MUTUAL_DEFENSE_BONUS;
       }
 
-    if(rCtr > 1)
-      {
-        rCtr = 0;
-        for(i = 0; i < posCoverageLen; i++)
-          {
-            if(isRook(posCoverage[i].from, gs) && isRook(posCoverage[i].to, gs))
-              h += ROOK_MUTUAL_DEFENSE_BONUS;
-          }
-      }
+    return 0.0f;
+  }
+
+/*  Marshal Evaluations  ***********************************************************************/
+
+/* Award points and issue penalties for individual marshal attributes. */
+float marshalEval(unsigned char index, GameState* gs)
+  {
+    float h = 0.0f;
+
+    h += rookOpenFile(index, gs);
+    h += rookHighRank(index, gs);
+    h += Tarrasch(index, gs);
+    h += rookEnemyQueen(index, gs);
+
     return h;
   }
 
+/*  Cardinal Evaluations  ***********************************************************************/
+
+/* Award points and issue penalties for individual cardinal attributes. */
+float cardinalEval(unsigned char index, GameState* gs)
+  {
+    float h = 0.0f;
+
+    h += cardinalKingNet(index, gs);
+
+    return h;
+  }
+
+/* Reward a Cardinal when it attacks multiple distinct squares in the enemy king’s immediate neighborhood at once. */
+float cardinalKingNet(unsigned char index, GameState* gs)
+  {
+    Move scope[_NONE];
+    bool attacked[_NONE] = { false };
+
+    unsigned char enemyKing = 0;
+    unsigned char ring[8];
+    unsigned char ringLen = 0;
+    unsigned char attackedCtr = 0;
+
+    unsigned int scopeLen;
+    unsigned int i;
+                                                                    //  Locate opposing king.
+    while(enemyKing < _NONE && !(isKing(enemyKing, gs) && opposed(index, enemyKing, gs)))
+      enemyKing++;
+
+    if(enemyKing == _NONE)                                          //  Defensive sanity check.
+      return 0.0f;
+
+    scopeLen = getCardinalScope(index, gs, scope);                  //  Obtain this Cardinal's raw geometric scope.
+
+    for(i = 0; i < scopeLen; i++)
+      attacked[scope[i].to] = true;
+                                                                    //  Build the enemy king's immediate ring.
+    if(u(enemyKing) < _NONE)
+      ring[ringLen++] = u(enemyKing);
+    if(ur(enemyKing) < _NONE)
+      ring[ringLen++] = ur(enemyKing);
+    if(r(enemyKing) < _NONE)
+      ring[ringLen++] = r(enemyKing);
+    if(dr(enemyKing) < _NONE)
+      ring[ringLen++] = dr(enemyKing);
+    if(d(enemyKing) < _NONE)
+      ring[ringLen++] = d(enemyKing);
+    if(dl(enemyKing) < _NONE)
+      ring[ringLen++] = dl(enemyKing);
+    if(l(enemyKing) < _NONE)
+      ring[ringLen++] = l(enemyKing);
+    if(ul(enemyKing) < _NONE)
+      ring[ringLen++] = ul(enemyKing);
+                                                                    //  Count DISTINCT king-ring squares controlled by this Cardinal.
+    for(i = 0; i < ringLen; i++)
+      {
+        if(attacked[ring[i]])
+          attackedCtr++;
+      }
+
+    if(attackedCtr < 2)
+      return 0.0f;
+
+    return ((float)attackedCtr * (float)(attackedCtr - 1) / 2.0f) * CARDINAL_KING_NET_PAIR_BONUS;
+  }
+
 /*  Queen Evaluations  ****************************************************************************/
+
 /* Award points and issue penalties for queen attributes. */
 float queenEval(unsigned char index,
-                unsigned char* posTeam, unsigned char posLen,
                 Move* posMoves, unsigned int posMovesLen,
                 Move* posXRay, unsigned int posXRayLen,
                 GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
 
-    h += queenEarlyDevelopment(index,
-                               posTeam, posLen,
-                               posMoves, posMovesLen, gs);
-    h += queenKingTropism(index,
-                          posXRay, posXRayLen,
-                          gs);
+    h += queenOverlappingAttacks(index, posMoves, posMovesLen, gs);
+    h += queenKingTropism(index, posXRay, posXRayLen, gs);
     return h;
   }
 
-/* Penalty for early development:
-   1. penalize queen if it is on file a, b, i or j during development (requires working def. of "development")
-   2. penalize queen for distance from its minor pieces (bishops and knights)
-   The idea is that the queen supported by a minor piece can be very powerful, but the queen alone makes only shallow threats.
-   Why don't we instead reward the queen for attacking squares also attacked by minor pieces?
-*/
-float queenEarlyDevelopment(unsigned char index,
-                            unsigned char* posTeam, unsigned char posLen,
-                            Move* posMoves, unsigned int posMovesLen,
-                            GameState* gs)
+/* The idea is that the queen supported by a minor piece can be very powerful, but the queen alone makes only shallow threats.
+   Cardinals and Marshals are treated as major pieces here and do not contribute to the minor-piece coordination bonus. */
+float queenOverlappingAttacks(unsigned char index, Move* posMoves, unsigned int posMovesLen, GameState* gs)
   {
-    float h = 0.0;
-    Move queenAttacks[64];                                          //  At most, a queen may have 35 moves, (and in Grand Chess you may only have one queen.)
-    unsigned char queenAttacksLen = 0;
-    Move bishopAttacks[64];                                         //  At most, a bishop may have 18 moves, (and in Grand Chess you may have only two bishops.)
-    unsigned char bishopAttacksLen = 0;
-    Move knightAttacks[64];                                         //  At most, a knight may have 8 moves, (and in Grand Chess you may have only two knights.)
-    unsigned char knightAttacksLen = 0;
+    float h = 0.0f;
+    bool minorAttack[_NONE] = { false };
     unsigned int i;
-    unsigned char j, k;
 
-    for(i = 0; i < posMovesLen; i++)                                //  Count.
+    for(i = 0; i < posMovesLen; i++)                                //  Record squares attacked by bishops and knights.
       {
-        if(isQueen(posMoves[i].from, gs))
-          {
-            queenAttacks[queenAttacksLen].from = posMoves[i].from;
-            queenAttacks[queenAttacksLen].to = posMoves[i].to;
-            queenAttacks[queenAttacksLen].promo = _NO_PROMO;
-            queenAttacksLen++;
-          }
-        else if(isBishop(posMoves[i].from, gs))
-          {
-            bishopAttacks[bishopAttacksLen].from = posMoves[i].from;
-            bishopAttacks[bishopAttacksLen].to = posMoves[i].to;
-            bishopAttacks[bishopAttacksLen].promo = _NO_PROMO;
-            bishopAttacksLen++;
-          }
-        else if(isKnight(posMoves[i].from, gs))
-          {
-            knightAttacks[knightAttacksLen].from = posMoves[i].from;
-            knightAttacks[knightAttacksLen].to = posMoves[i].to;
-            knightAttacks[knightAttacksLen].promo = _NO_PROMO;
-            knightAttacksLen++;
-          }
+        if(isBishop(posMoves[i].from, gs) || isKnight(posMoves[i].from, gs))
+          minorAttack[posMoves[i].to] = true;
       }
 
-    for(i = 0; i < queenAttacksLen; i++)
+    for(i = 0; i < posMovesLen; i++)                                //  Reward this queen where its attacks overlap a minor-piece attack.
       {
-        j = 0;
-        while(j < bishopAttacksLen && bishopAttacks[j].to != queenAttacks[i].to)
-          j++;
-
-        k = 0;
-        while(k < knightAttacksLen && knightAttacks[k].to != queenAttacks[i].to)
-          k++;
-
-        if(j < bishopAttacksLen || k < knightAttacksLen)
+        if(posMoves[i].from == index && minorAttack[posMoves[i].to])
           h += QUEEN_OVERLAPPING_ATTACK_BONUS;
       }
 
@@ -4360,24 +4246,25 @@ float queenEarlyDevelopment(unsigned char index,
 
 float queenKingTropism(unsigned char index, Move* posXRay, unsigned int posXRayLen, GameState* gs)
   {
-    float h = 0.0;
-    unsigned char i = 0;
+    float h = 0.0f;
+    unsigned char kingIndex = 0;
+    unsigned int i = 0;
     unsigned char enemyKingMap[_NONE];
 
     if(isWhite(index, gs))
       {
-        while(i < _NONE && gs->board[i] != _BLACK_KING)
-          i++;
+        while(kingIndex < _NONE && gs->board[kingIndex] != _BLACK_KING)
+          kingIndex++;
       }
     else
       {
-        while(i < _NONE && gs->board[i] != _WHITE_KING)
-          i++;
+        while(kingIndex < _NONE && gs->board[kingIndex] != _WHITE_KING)
+          kingIndex++;
       }
-    if(i == _NONE)                                                  //  This should never happen because Kings are always on board!
-      return 0.0;
+    if(kingIndex == _NONE)                                          //  This should never happen because Kings are always on board!
+      return 0.0f;
 
-    bfs(enemyKingMap, i, 16, 4);
+    bfs(enemyKingMap, kingIndex, 16, 4);
 
     for(i = 0; i < posXRayLen; i++)
       {
@@ -4541,34 +4428,33 @@ unsigned char bfs(unsigned char* map, unsigned char start, unsigned char val, un
   }
 
 /*  King Evaluations  ****************************************************************************/
+
 /* Award points and issue penalties for king attributes. */
 float kingEval(unsigned char index,
                unsigned char* negTeam, unsigned char negLen,
                Move* negMoves, unsigned int negMovesLen,
                GameState* gs)
   {
-    float h = 0.0;
-    unsigned char ph = phase_discrete(gs);
-    unsigned char r;
-    unsigned char c;
+    float h = 0.0f;
+    float e = endgameness(gs);
+    float safety = 1.0f - e;
+    float centrality = 0.0f;
+    unsigned char r, c;
 
-    if(ph == MIDDLE_GAME)                                           //  Safety in middle-game
-      {
-        h += kingPawnShield(index, gs);
-        h += kingPawnStorm(index, negTeam, negLen, gs);
-        h += kingTropism(index, negTeam, negLen, gs);
-        h += kingZoneAttacks(index, negMoves, negMovesLen, gs);
-      }
-    else if(ph == END_GAME)                                         //  Centrality in endgame
-      {
-        r = row(index);
-        c = col(index);
+    h += kingPawnShield(index, gs) * safety;
+    h += kingPawnStorm(index, negTeam, negLen, gs) * safety;
+    h += kingTropism(index, negTeam, negLen, gs) * safety;
+    h += kingZoneAttacks(index, negMoves, negMovesLen, gs) * safety;
 
-        if(c > 1 && c < 8)
-          h += KING_ENDGAME_CENTRALITY;
-        if(r > 1 && r < 8)
-          h += KING_ENDGAME_CENTRALITY;
-      }
+    r = row(index);
+    c = col(index);
+
+    if(c > 1 && c < 8)
+      centrality += KING_ENDGAME_CENTRALITY;
+    if(r > 1 && r < 8)
+      centrality += KING_ENDGAME_CENTRALITY;
+
+    h += centrality * e;
 
     return h;
   }
@@ -4577,7 +4463,7 @@ float kingEval(unsigned char index,
                 to the King */
 float kingPawnShield(unsigned char index, GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     bool awayFromOpenFile = false;
 
     if(col(index) == 0)                                             //  King to extreme left: check right
@@ -4670,7 +4556,7 @@ float kingPawnStorm(unsigned char index,
                     unsigned char* negTeam, unsigned char negLen,
                     GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char i;
 
     if(col(index) == 0)                                             //  King to extreme left: check right
@@ -4719,7 +4605,7 @@ float kingTropism(unsigned char index,
                   unsigned char* negTeam, unsigned char negLen,
                   GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char i = 0;
     unsigned char kingMap[_NONE];
 
@@ -4755,7 +4641,7 @@ float kingZoneAttacks(unsigned char index,
                       Move* negMoves, unsigned int negMovesLen,
                       GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char zone[_NONE];
     unsigned int i;
 
@@ -4797,9 +4683,9 @@ float kingZoneAttacks(unsigned char index,
  Scores moves and attacks according to the center control map of values. */
 float centercontrol(bool white, Move* posMoves, unsigned int posMovesLen, Move* posPawnAttacks, unsigned int posPawnAttacksLen)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned char centerControlMap[_NONE];
-    unsigned char i;
+    unsigned int i;
 
     buildCenterMap(white, centerControlMap);                        //  Fill in map.
 
@@ -4860,19 +4746,27 @@ void buildCenterMap(bool white, unsigned char* m)
  WHOSE vulnerability? The OPPOSITE of the GIVEN team! */
 float vulnerability(Move* posMoves, unsigned int posMovesLen, GameState* gs)
   {
-    float h = 0.0;
-    unsigned int i;
+    float h = 0.0f;
     float attackerVal;                                              //  Material value of attacker
     float targetedVal;                                              //  Material value of the target
+    unsigned int i;
+    bool counted[_NONE];
+
+    for(i = 0; i < _NONE; i++)                                      //  Blank out.
+      counted[i] = false;
 
     for(i = 0; i < posMovesLen; i++)                                //  Check every enemy attack
       {
-        if(!isEmpty(posMoves[i].to, gs))                            //  If target is occupied
+        if(!isEmpty(posMoves[i].to, gs) && !counted[posMoves[i].to])//  If target is occupied and not yet counted...
           {
             attackerVal = materialLookup(posMoves[i].from, gs);
             targetedVal = materialLookup(posMoves[i].to, gs);
-            if(targetedVal >= attackerVal)                          //  If the en prise piece is AS or
-              h += targetedVal * VULNERABLE_DISCOUNT;               //  MORE valuable, consider it (slightly) lost.
+
+            if(targetedVal >= attackerVal)                          //  If the en prise piece is AS orMORE valuable, consider it (slightly) lost.
+              {
+                h += targetedVal * VULNERABLE_DISCOUNT;
+                counted[posMoves[i].to] = true;
+              }
           }
       }
 
@@ -4894,13 +4788,14 @@ float vulnerability(Move* posMoves, unsigned int posMovesLen, GameState* gs)
             Piece at [52] (black knight in square brackets, E7 = 52) means moveC[52] = 6 and attackC[52] = 6.  */
 float trapped(Move* posMoves, unsigned int posMovesLen,
               Move* negMoves, unsigned int negMovesLen,
-              Move* negPawnAttacks, unsigned int negPawnAtacksLen,
+              Move* negPawnAttacks, unsigned int negPawnAttacksLen,
               Move* negCoverage, unsigned int negCoverageLen, GameState* gs)
   {
-    float h = 0.0;                                                  //  Trapped piece score to return.
+    float h = 0.0f;                                                 //  Trapped piece score to return.
     unsigned char moveC[_NONE];                                     //  Count moves for ally at [i].
     unsigned char attackC[_NONE];                                   //  Count squares under attack to which [i] could move.
     unsigned int i, j;
+    bool attacked;
 
     for(i = 0; i < _NONE; i++)                                      //  Blank out counters
       {
@@ -4913,23 +4808,27 @@ float trapped(Move* posMoves, unsigned int posMovesLen,
         if(!isPawn(posMoves[i].from, gs) && !isKing(posMoves[i].from, gs))
           {
             moveC[ posMoves[i].from ]++;                            //  Add to piece at [i]'s number of moves.
+            attacked = false;
 
-            for(j = 0; j < negMovesLen; j++)                        //  For all enemy pieces' attacks that cover the current move...
+            for(j = 0; j < negMovesLen && !attacked; j++)           //  For all enemy pieces' attacks that cover the current move...
               {
                                                                     //  (Pawns attack differently, handled below.)
                 if( !isPawn(negMoves[j].from, gs) && negMoves[j].to == posMoves[i].to )
-                  attackC[ posMoves[i].from ]++;
+                  attacked = true;
               }
-            for(j = 0; j < negPawnAtacksLen; j++)                   //  For all enemy pawns' attacks that cover the current move...
+            for(j = 0; j < negPawnAttacksLen; j++)                  //  For all enemy pawns' attacks that cover the current move...
               {
                 if(negPawnAttacks[j].to == posMoves[i].to)
-                  attackC[ posMoves[i].from ]++;
+                  attacked = true;
               }
             for(j = 0; j < negCoverageLen; j++)                     //  For all enemy coverage, for which gain < loss...
               {
                 if( negCoverage[j].to == posMoves[i].to && materialLookup(posMoves[i].to, gs) < materialLookup(posMoves[i].from, gs) )
-                  attackC[ posMoves[i].from ]++;
+                  attacked = true;
               }
+
+            if(attacked)
+              attackC[posMoves[i].from]++;
           }
       }
 
@@ -4952,7 +4851,7 @@ float pins(unsigned char* posTeam, unsigned char posTeamLen,
            Move* posCoverage, unsigned int posCoverageLen,
            Move* negCoverage, unsigned int negCoverageLen, GameState* gs)
   {
-    float h = 0.0;                                                  //  Pins score to return.
+    float h = 0.0f;                                                 //  Pins score to return.
     unsigned char set[10];                                          //  Set builder: on a 10 x 10 board, no set will be larger than 10.
     unsigned char setLen;                                           //  Set length.
     unsigned char i, j;                                             //  Count through team, count through sets.
@@ -5357,7 +5256,7 @@ float awardPinPatternBishopRook(unsigned char attackerIndex, unsigned char pinne
                                 Move* negCoverage, unsigned int negCoverageLen,
                                 GameState* gs)
   {
-    float h = 0.0;
+    float h = 0.0f;
     unsigned int j, k;
 
     if(isKing(shieldedIndex, gs))                                   //  King is shielded.
@@ -5414,8 +5313,8 @@ float awardPinPatternQueen(unsigned char attackerIndex, unsigned char pinnedInde
                            Move* negCoverage, unsigned int negCoverageLen,
                            GameState* gs)
   {
-    float h = 0.0;
-    unsigned char j, k;
+    float h = 0.0f;
+    unsigned int j, k;
 
     if(isKing(shieldedIndex, gs))                                   //  King is shielded
       {
@@ -5617,98 +5516,80 @@ unsigned char getRow(unsigned char index, unsigned char* c)
   }
 
 /**************************************************************************************************
- Game Phase
-   Return a float in [0.0, 1.0] so that we can shade from opening to middle to endgame. */
-float phase(GameState* gs)
+ Game Phase  */
+
+/* How like the opening state is the given game state? */
+float openingness(GameState* gs)
   {
+    unsigned char i;
+    unsigned char homePawns = 0;
+    unsigned char homeDevelopmentPieces = 0;
+    float pawnFraction;
+    float developmentFraction;
     float total;
-    float piece_total = 0.0;
+
+    for(i = 0; i < _NONE; i++)
+      {
+        if(isPawn(i, gs))
+          {
+            if((isWhite(i, gs) && row(i) == 2) || (isBlack(i, gs) && row(i) == 7))
+              homePawns++;
+          }
+
+        if(isKnight(i, gs) || isBishop(i, gs) || isCardinal(i, gs) || isMarshal(i, gs))
+          {
+            if((isWhite(i, gs) && row(i) == 1) || (isBlack(i, gs) && row(i) == 8))
+              homeDevelopmentPieces++;
+          }
+      }
+
+    pawnFraction  = (float)homePawns  / 20.0f;                      //  Ambrosia: 20 initial pawns; 8 orthodox minor pieces total.
+    developmentFraction = (float)homeDevelopmentPieces / 12.0f;
+                                                                    //  Pawns are the irreversible gate.
+    total = pawnFraction * (0.65f + 0.35f * developmentFraction);
+
+    return (total > 1.0f) ? 1.0f : (total < 0.0f) ? 0.0f : total;
+  }
+
+/* How like an endgame position is the given game state? */
+float endgameness(GameState* gs)
+  {
+    float power = 0.0f;
+    float total;
     unsigned char i;
 
     for(i = 0; i < _NONE; i++)
       {
         if(isQueen(i, gs))
-          piece_total += 8.0;
+          power += 4.0f;
         else if(isCardinal(i, gs))
-          piece_total += 4.0;
+          power += 3.0f;
         else if(isMarshal(i, gs))
-          piece_total += 4.0;
+          power += 3.0f;
         else if(isRook(i, gs))
-          piece_total += 2.0;
+          power += 2.0f;
         else if(isBishop(i, gs))
-          piece_total += 1.0;
+          power += 1.0f;
         else if(isKnight(i, gs))
-          piece_total += 1.0;
-        else if(isPawn(i, gs))
-          piece_total += 0.25;
-      }
-    total = piece_total / 40.0;
-    total = (total > 1.0) ? 1.0 : (total < 0.0) ? 0.0 : total;
-    return total;
-  }
-
-/*  Working definitions of...
-      OPENING GAME: majority of pawns still on their original positions.
-                    both queens on board.
-                    all major pieces on board.
-                    majority of minor pieces not yet captured
-      MIDDLE GAME:  both queens on board.
-                    most major pieces on board.
-      END GAME:     absence of all other conditions  */
-unsigned char phase_discrete(GameState* gs)
-  {
-    unsigned char i;
-    unsigned char wQctr = 0;                                        //  Count queens
-    unsigned char bQctr = 0;
-    unsigned char minorCtr = 0;                                     //  Count minor pieces (Bishops and Knights)
-    unsigned char majorCtr = 0;                                     //  Count major pieces (Rooks, Cardinal, Marshal)
-    unsigned char pPosCtr = 0;                                      //  Count all pawns on original positions
-    unsigned char pCtr = 0;                                         //  Count all pawns
-
-
-    for(i = 0; i < _NONE; i++)                                      //  Count up pieces
-      {
-        if(isQueen(i, gs))
-          {
-            if(isWhite(i, gs))
-              wQctr++;
-            else
-              bQctr++;
-          }
-        else if(isKnight(i, gs) || isBishop(i, gs))
-          minorCtr++;
-        else if(isRook(i, gs) || isCardinal(i, gs) || isMarshal(i, gs))
-          majorCtr++;
-        else if(isPawn(i, gs))
-          {
-            pCtr++;
-            if( (isWhite(i, gs) && row(i) == 1) || (isBlack(i, gs) && row(i) == 6) )
-              pPosCtr++;
-          }
+          power += 1.0f;
       }
 
-    if( minorCtr >= 4 && majorCtr == 8 && wQctr == 1 && bQctr == 1 && (float)pPosCtr / (float)pCtr >= 0.5 )
-      return OPENING_GAME;
-    if(wQctr == 1 && bQctr == 1 && majorCtr >= 5)
-      return MIDDLE_GAME;
+    total = 1.0f - power / 36.0f;                                   //  For Ambrosia.
 
-    return END_GAME;
+    return (total > 1.0f) ? 1.0f : (total < 0.0f) ? 0.0f : total;
   }
 
 /* w[0] = alpha for opening-game weights.
    w[1] = alpha for middle-game weights.
    w[2] = alpha for end-game weights. */
-unsigned char phase_alphas(float p, float* w)
+unsigned char phase_alphas(GameState* gs, float* w)
   {
-    float val;
+    float o = openingness(gs);
+    float e = endgameness(gs);
 
-    val = 2.0 * p - 1.0;
-    w[0] = (val > 0.0) ? val : 0.0;
-
-    val = 1.0 - 2.0 * p;
-    w[2] = (val > 0.0) ? val : 0.0;
-
-    w[1] = 1.0 - w[0] - w[2];
+    w[OPENING_GAME] = o;
+    w[END_GAME]     = (1.0f - o) * e;
+    w[MIDDLE_GAME]  = (1.0f - o) * (1.0f - e);
 
     return 3;
   }

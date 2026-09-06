@@ -100,8 +100,7 @@ function move(a, b)
                                                                     //  The A.I. promotion routine updates the game state at the end of promotion.
                 else
                   {
-                                                                    //  Update the game state.
-                    gameEngine.instance.exports.makeMove_client(a, b, _NO_PROMO);
+                    ambrosia.commitRealMove(a, b, _NO_PROMO);       //  Update the game state (and OBSERVE the update).
                     swapTurns();                                    //  Nobody's promoting now, swap turns.
                   }
               }
@@ -120,8 +119,7 @@ function move(a, b)
                                                                     //  THERFORE **DO NOT** UPDATE THE GAME-ENGINE YET!!!
                 else
                   {
-                                                                    //  Update the game state.
-                    gameEngine.instance.exports.makeMove_client(a, b, _NO_PROMO);
+                    ambrosia.commitRealMove(a, b, _NO_PROMO);       //  Update the game state (and OBSERVE the update).
                     swapTurns();                                    //  Nobody's promoting now, swap turns.
                   }
               }
@@ -160,7 +158,7 @@ function die(a)
         tween.start();
       }
   }
-
+/* Received index "a" is the index of the CAPTURED PIECE. */
 function dieEnPassant(a)
   {
     animationTarget = 0;
@@ -241,7 +239,7 @@ function promoteHuman(a, b, p)
 
 function refusePromoteHuman(a, b)
   {
-    gameEngine.instance.exports.makeMove_client(a, b, _NO_PROMO);   //  HERE UPDATE THE GAME-ENGINE!!!
+    ambrosia.commitRealMove(a, b, _NO_PROMO);                       //  Update the game state (and OBSERVE the update).
     swapTurns();
   }
 
@@ -338,7 +336,7 @@ function completePromotionHuman(a, b, p)
           }
       }
 
-    gameEngine.instance.exports.makeMove_client(a, b, p);           //  HERE UPDATE THE GAME-ENGINE!!!
+    ambrosia.commitRealMove(a, b, p);                               //  Update the game state (and OBSERVE the update).
 
     gamePieces[gamePieces.length - 1].chessposition = b;
     gamePieces[gamePieces.length - 1].position.x = convIndexToX(b);
@@ -489,7 +487,7 @@ function completePromotionAI(a, b, p)
           }
       }
 
-    gameEngine.instance.exports.makeMove_client(a, b, p);           //  HERE UPDATE THE GAME-ENGINE!!!
+    ambrosia.commitRealMove(a, b, p);                               //  Update the game state (and OBSERVE the update).
 
     gamePieces[gamePieces.length - 1].chessposition = b;
     gamePieces[gamePieces.length - 1].position.x = convIndexToX(b);
@@ -521,8 +519,21 @@ function swapTurns()
     var winFlag;
     var i;
 
+    switch(PromotionTarget)
+      {
+        case _PROMO_KNIGHT:    console.log(Select_A + ', ' + Select_B + ': Knight');    break;
+        case _PROMO_BISHOP:    console.log(Select_A + ', ' + Select_B + ': Bishop');    break;
+        case _PROMO_ROOK:      console.log(Select_A + ', ' + Select_B + ': Rook');      break;
+        case _PROMO_CARDINAL:  console.log(Select_A + ', ' + Select_B + ': Cardinal');  break;
+        case _PROMO_MARSHAL:   console.log(Select_A + ', ' + Select_B + ': Marshal');   break;
+        case _PROMO_QUEEN:     console.log(Select_A + ', ' + Select_B + ': Queen');     break;
+        default:               console.log(Select_A + ', ' + Select_B);
+      }
+
     Select_A = _NOTHING;                                            //  Reset.
     Select_B = _NOTHING;
+    Castle_C = _NOTHING;
+    Castle_D = _NOTHING;
     PromotionTarget = _NO_PROMO;
 
     winFlag = gameEngine.instance.exports.isWin_client();           //  Is the game state now terminal?
