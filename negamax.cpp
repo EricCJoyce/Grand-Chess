@@ -915,6 +915,10 @@ void enterNode_step(unsigned int gsIndex, NegamaxNode* node)
                                                                     //               to Negamax's repetition-encoding answer buffer.
     saveRepetitionState(gsIndex);                                   //  Save the canonical repetition-detection encoding under gsIndex.
 
+    //////////////////////////////////////////////////////////////////  Compute the hash for this node.
+    node->zhash = hash(gamestateByteArray);                         //  Zobrist-hash the game state byte array.
+    node->hIndex = hashIndex(node->zhash);                          //  Index modulo size of transposition table.
+
     //////////////////////////////////////////////////////////////////  Terminal test.
                                                                     //  "node"s "gs" is already in the "queryGameStateBuffer".
                                                                     //  And "queryGameStateBuffer" is already in Evaluation Module's "inputBuffer"
@@ -944,10 +948,6 @@ void enterNode_step(unsigned int gsIndex, NegamaxNode* node)
             return;                                                 //  Done here.
           }
       }
-
-    //////////////////////////////////////////////////////////////////  Compute the hash for this node.
-    node->zhash = hash(gamestateByteArray);                         //  Zobrist-hash the game state byte array.
-    node->hIndex = hashIndex(node->zhash);                          //  Index modulo size of transposition table.
 
     //////////////////////////////////////////////////////////////////  Transposition-table probe.
     transpoProbe(gsIndex, node);                                    //  Check the transpo table.
