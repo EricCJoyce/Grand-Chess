@@ -108,7 +108,7 @@ static_assert(_NEGAMAX_MOVE_ARENA_CAPACITY >= (_MAX_PLY + _QUIESCENCE_MAX_PLY + 
 #define _REPETITION_PATH_PREFIX_CAPACITY         1                  /*  */
 #define _REPETITION_PATH_HEADER_SIZE             1                  /*  */
 #define _REPETITION_STATE_BYTE_SIZE             41                  /* (A simplified form of the game state encoding.) */
-#define HISTORY_DRAW                             1                  /* Copied from "philadelphia.c" without haveing to #include "philadelphia".
+#define HISTORY_DRAW                             1                  /* Copied from "philadelphia.c" without having to #include "philadelphia".
                                                                        The number of occurrences of the given game state DOES CAUSE draw by repetition. */
 #define ENCODE_OFFSET_WHITE_PAWNS                1                  /* Bytes [1..10]. */
 #define ENCODE_OFFSET_BLACK_PAWNS               11                  /* Bytes [11..20]. */
@@ -364,7 +364,7 @@ unsigned char answerMovesBuffer[_MAX_MOVES * (_MOVE_BYTE_SIZE + 5)];//  The actu
 
                                                                     //  13,616 bytes.
 unsigned char zobristHashBuffer[ZHASH_TABLE_SIZE * 8];              //  Global array containing the serialized Zobrist-hasher values (unsigned long longs).
-                                                                    //  "Keys" are simply unisnged int values #defined above.
+                                                                    //  "Keys" are simply unsinged int values #defined above.
 
                                                                     //  9,437,185 bytes.
                                                                     //  For "transpositionTableBuffer" included in "transposition.h".
@@ -702,7 +702,7 @@ unsigned int getMovesArenaSize(void)
 /**************************************************************************************************
  Negamax-search functions  */
 
-/* Initialize the root node for (interrupatble) negamax search. */
+/* Initialize the root node for (interruptable) negamax search. */
 void initSearch(void)
   {
     NegamaxNode root;
